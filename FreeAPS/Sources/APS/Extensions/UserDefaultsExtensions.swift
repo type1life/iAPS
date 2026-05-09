@@ -5,29 +5,29 @@ import RileyLinkKit
 
 extension UserDefaults {
     private enum Key: String {
-        case pumpManagerRawValue = "com.rileylink.PumpManagerRawValue"
-        case rileyLinkConnectionManagerState = "com.rileylink.RileyLinkConnectionManagerState"
+        case legacyPumpManagerState = "com.rileylink.PumpManagerRawValue"
+        case legacyCGMManagerState = "cgmManagerRawValue"
     }
 
-    var pumpManagerRawValue: PumpManager.RawStateValue? {
+    var legacyPumpManagerRawValue: PumpManager.RawStateValue? {
         get {
-            dictionary(forKey: Key.pumpManagerRawValue.rawValue)
+            dictionary(forKey: Key.legacyPumpManagerState.rawValue)
         }
         set {
-            set(newValue, forKey: Key.pumpManagerRawValue.rawValue)
+            set(newValue, forKey: Key.legacyPumpManagerState.rawValue)
         }
     }
 
-    var rileyLinkConnectionManagerState: RileyLinkConnectionState? {
-        get {
-            guard let rawValue = dictionary(forKey: Key.rileyLinkConnectionManagerState.rawValue)
-            else {
-                return nil
-            }
-            return RileyLinkConnectionState(rawValue: rawValue)
-        }
-        set {
-            set(newValue?.rawValue, forKey: Key.rileyLinkConnectionManagerState.rawValue)
-        }
+    func clearLegacyPumpManagerRawValue() {
+        set(nil, forKey: Key.legacyPumpManagerState.rawValue)
+    }
+
+    var legacyCgmManagerRawValue: CGMManager.RawStateValue? {
+        get { object(forKey: Key.legacyCGMManagerState.rawValue) as? CGMManager.RawStateValue }
+        set { set(newValue, forKey: Key.legacyCGMManagerState.rawValue) }
+    }
+
+    func clearLegacyCGMManagerRawValue() {
+        set(nil, forKey: Key.legacyCGMManagerState.rawValue)
     }
 }

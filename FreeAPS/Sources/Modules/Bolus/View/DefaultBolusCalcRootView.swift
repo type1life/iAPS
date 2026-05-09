@@ -9,7 +9,7 @@ extension Bolus {
         let waitForSuggestion: Bool
         let fetch: Bool
 
-        @StateObject var state = StateModel()
+        @EnvironmentObject var state: StateModel
 
         let meal: FetchedResults<Meals>
         let mealEntries: any View
@@ -51,13 +51,31 @@ extension Bolus {
             } else { return 0 }
         }
 
+        init(
+            resolver: Resolver,
+            waitForSuggestion: Bool,
+            fetch: Bool,
+//            state: StateModel,
+            meal: FetchedResults<Meals>,
+            mealEntries: any View
+        ) {
+            self.resolver = resolver
+            self.waitForSuggestion = waitForSuggestion
+            self.fetch = fetch
+//            self.state = state
+            self.meal = meal
+            self.mealEntries = mealEntries
+        }
+
         var body: some View {
             Form {
                 Section {
                     if state.waitForSuggestion {
                         Text("Please wait")
-                    } else {
+                    } else if state.predictions != nil {
                         predictionChart
+                    } else {
+                        Text("No Predictions. Failed loop suggestion.").frame(maxWidth: .infinity, alignment: .center)
                     }
                 }
 
@@ -74,7 +92,7 @@ extension Bolus {
                             Spacer()
                             ActivityIndicator(isAnimating: .constant(true), style: .medium) // fix iOS 15 bug
                         }
-                    } else {
+                    } else if state.suggestion != nil {
                         HStack {
                             Button(action: {
                                 presentInfo.toggle()
@@ -171,6 +189,7 @@ extension Bolus {
                     Section {
                         Button {
                             keepForNextWiew = true
+                            state.save()
                             state.showModal(for: nil)
                         }
                         label: {
@@ -190,24 +209,16 @@ extension Bolus {
                     }
                 }
             }
+            .interactiveDismissDisabled()
             .compactSectionSpacing()
             .dynamicTypeSize(...DynamicTypeSize.xxLarge)
             .onAppear {
-                configureView {
-                    state.viewActive()
-                    state.waitForSuggestionInitial = waitForSuggestion
-                    state.waitForSuggestion = waitForSuggestion
-                }
+                state.viewActive()
+                state.waitForCarbs = fetch
+                state.waitForSuggestionInitial = waitForSuggestion
+                state.waitForSuggestion = waitForSuggestion
+                state.start()
             }
-
-            .onDisappear {
-                if fetch, hasFatOrProtein, !keepForNextWiew, state.eventualBG {
-                    state.delete(deleteTwice: true, meal: meal)
-                } else if fetch, !keepForNextWiew, state.eventualBG {
-                    state.delete(deleteTwice: false, meal: meal)
-                }
-            }
-
             .navigationTitle("Enact Bolus")
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarItems(
@@ -223,6 +234,7 @@ extension Bolus {
                 trailing: Button {
                     state.hideModal()
                     state.notActive()
+                    if fetch { state.apsManager.determineBasalSync() }
                 }
                 label: { Text("Cancel") }
             )
@@ -231,8 +243,9 @@ extension Bolus {
             }
         }
 
-        var disabled: Bool {
-            state.amount <= 0 || state.amount > state.maxBolus
+        private var disabled: Bool {
+            state.amount <= 0 || state.amount > state.maxBolus || state.amount <
+                state.minBolus || state.amount < state.bolusIncrement
         }
 
         var predictionChart: some View {
@@ -256,9 +269,9 @@ extension Bolus {
         func carbsView() {
             if fetch {
                 keepForNextWiew = true
-                state.backToCarbsView(complexEntry: hasFatOrProtein, meal, override: false, deleteNothing: false, editMode: true)
+                state.backToCarbsView(override: false, editMode: true)
             } else {
-                state.backToCarbsView(complexEntry: false, meal, override: true, deleteNothing: true, editMode: false)
+                state.backToCarbsView(override: true, editMode: false)
             }
         }
 
@@ -323,8 +336,11 @@ extension Bolus {
                             if state.fraction != 1, state.insulin > 0 {
                                 Divider()
                                 HStack {
-                                    Text((entries.last?.variable ?? "") + " " + (entries.last?.value ?? "") + "  ->")
-                                        .foregroundStyle(.secondary)
+                                    if let recent = entries.last {
+                                        Text("\(recent.variable) \(recent.value)  ->")
+                                            .foregroundStyle(.secondary)
+                                    }
+
                                     Text(
                                         state.insulinCalculated.formatted() + unit
                                     ).fontWeight(fontWeight).font(.title3).foregroundStyle(.blue).bold()

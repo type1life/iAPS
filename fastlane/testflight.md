@@ -24,7 +24,7 @@ This step is common for all "Browser Builds", and should be done only once. Plea
 
 1. Sign in to the [Apple developer portal page](https://developer.apple.com/account/resources/certificates/list).
 1. Copy the team id from the upper right of the screen. Record this as your `TEAMID`.
-1. Go to the [App Store Connect](https://appstoreconnect.apple.com/access/api) interface, click the "Keys" tab, and create a new key with "Admin" access. Give it a name like "FastLane API Key".
+1. Go to the [App Store Connect](https://appstoreconnect.apple.com/access/integrations/api) interface, click the "Keys" tab, and create a new key with "Admin" access. Give it a name like "FastLane API Key".
 1. Record the key id; this will be used for `FASTLANE_KEY_ID`.
 1. Record the issuer id; this will be used for `FASTLANE_ISSUER_ID`.
 1. Download the API key itself, and open it in a text editor. The contents of this file will be used for `FASTLANE_KEY`. Copy the full text, including the "-----BEGIN PRIVATE KEY-----" and "-----END PRIVATE KEY-----" lines.
@@ -95,10 +95,9 @@ You do not need to fill out the next form. That is for submitting to the app sto
 
 ## Create Building Certficates
 
-1. Go back to the "Actions" tab of your iAPS repository in github.
-1. Select "3. Create Certificates".
-1. Click "Run Workflow", and tap the green button.
-1. Wait, and within a minute or two you should see a green checkmark indicating the workflow succeeded.
+This step is no longer required. The Build function now takes care of this for you. It does not hurt to run it but is not needed.
+
+Once a year, you will get an email from Apple indicating your certificate will expire in 30 days. You can ignore that email. When it does expire, the next time an automatic or manual build happens, the expired certificate information will be removed (nuked) from your Match-Secrets repository and a new one created. This should happen without you needing to take any action.
 
 ## Build iAPS!
 

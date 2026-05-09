@@ -6,7 +6,7 @@ extension Bolus {
         let resolver: Resolver
         let waitForSuggestion: Bool
         let fetch: Bool
-        @StateObject var state = StateModel()
+        @StateObject var state: StateModel
 
         @State private var keepForNextWiew: Bool = false
 
@@ -22,6 +22,17 @@ extension Bolus {
             sortDescriptors: [NSSortDescriptor(key: "createdAt", ascending: false)]
         ) var meal: FetchedResults<Meals>
 
+        init(
+            resolver: Resolver,
+            waitForSuggestion: Bool,
+            fetch: Bool
+        ) {
+            self.resolver = resolver
+            self.waitForSuggestion = waitForSuggestion
+            self.fetch = fetch
+            _state = StateObject(wrappedValue: StateModel(resolver: resolver))
+        }
+
         var body: some View {
             if state.useCalc {
                 if state.eventualBG {
@@ -29,7 +40,6 @@ extension Bolus {
                         resolver: resolver,
                         waitForSuggestion: waitForSuggestion,
                         fetch: fetch,
-                        state: state,
                         meal: meal,
                         mealEntries: mealEntries
                     )
@@ -38,12 +48,12 @@ extension Bolus {
                             state.notActive()
                         }
                     }
+                    .environmentObject(state)
                 } else {
                     AlternativeBolusCalcRootView(
                         resolver: resolver,
                         waitForSuggestion: waitForSuggestion,
                         fetch: fetch,
-                        state: state,
                         meal: meal,
                         mealEntries: mealEntries
                     )
@@ -52,6 +62,7 @@ extension Bolus {
                             state.notActive()
                         }
                     }
+                    .environmentObject(state)
                 }
             } else {
                 cleanBolusView
@@ -94,6 +105,7 @@ extension Bolus {
                     } else {
                         Button {
                             state.hideModal()
+                            if fetch { state.saveMeal() }
                             keepForNextWiew = true
                         }
                         label: {
@@ -104,10 +116,8 @@ extension Bolus {
                 }
             }
             .onDisappear {
-                if fetch, hasFatOrProtein, !keepForNextWiew, !state.useCalc {
-                    state.delete(deleteTwice: true, meal: meal)
-                } else if fetch, !keepForNextWiew, !state.useCalc {
-                    state.delete(deleteTwice: false, meal: meal)
+                if !state.useCalc {
+                    state.notActive()
                 }
                 if !state.useCalc {
                     state.notActive()

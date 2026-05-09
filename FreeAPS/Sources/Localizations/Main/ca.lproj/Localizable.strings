@@ -1085,10 +1085,10 @@ Enact a temp Basal or a temp target */
 "Connect to Apple Health" = "Connect to Apple Health";
 
 /* Show when have not permissions for writing to Health */
-"For write data to Apple Health you must give permissions in Settings > Health > Data Access" = "For write data to Apple Health you must give permissions in Settings > Health > Data Access";
+"To allow iAPS to write data to Apple Health, you must grant permission in Settings > Health > Data Access." = "To allow iAPS to write data to Apple Health, you must grant permission in Settings > Health > Data Access.";
 
 /* */
-"This allows iAPS to read from and write to Apple Heath. You must also give permissions in Settings > Health > Data Access. If you enter a glucose value into Apple Health, open iAPS to confirm it shows up." = "This allows iAPS to read from and write to Apple Heath. You must also give permissions in Settings > Health > Data Access. If you enter a glucose value into Apple Health, open iAPS to confirm it shows up.";
+"This allows iAPS to read from and write to Apple Heath. You must also give permissions in Settings > Health > Data Access." = "This allows iAPS to read from and write to Apple Heath. You must also give permissions in Settings > Health > Data Access.";
 
 /* New ALerts ------------------------- */
 /* Info title */
@@ -1452,13 +1452,13 @@ Enact a temp Basal or a temp target */
 "Change HbA1c Unit" = "Change HbA1c Unit";
 
 /* */
-"Display Chart X - Grid lines" = "Display Chart X - Grid lines";
+"Vertical grid lines" = "Vertical grid lines";
 
 /* */
-"Display Chart Y - Grid lines" = "Display Chart Y - Grid lines";
+"Horizontal grid lines" = "Horizontal grid lines";
 
 /* */
-"Display Chart Threshold lines for Low and High" = "Display Chart Threshold lines for Low and High";
+"Threshold lines (Low / High)" = "Threshold lines (Low / High)";
 
 /* */
 "Standing / Laying TIR Chart" = "Standing / Laying TIR Chart";
@@ -1760,7 +1760,7 @@ Enact a temp Basal or a temp target */
 "Remaining Carbs Cap" = "Remaining Carbs Cap";
 
 /* "Remaining Carbs Cap" */
-"This is the amount of the maximum number of carbs we’ll assume will absorb over 4h if we don’t yet see carb absorption." = "This is the amount of the maximum number of carbs we’ll assume will absorb over 4h if we don’t yet see carb absorption.";
+"This is the amount of the maximum number of carbs we’ll assume will absorb over 4h if we don’t yet see carb absorption. Maximum 90" = "This is the amount of the maximum number of carbs we’ll assume will absorb over 4h if we don’t yet see carb absorption. Maximum 90";
 
 /* Headline ”Max SMB Basal Minutes" */
 "Max SMB Basal Minutes" = "Max SMB Basal Minutes";

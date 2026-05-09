@@ -3,6 +3,8 @@ import Foundation
 class ChartModel: ObservableObject {
     @Published var suggestion: Suggestion?
     @Published var glucose: [BloodGlucose]
+    @Published var activity: [IOBTick0]
+    @Published var cob: [IOBData] // we already have IOBData in storage and it contains COB values
     @Published var isManual: [BloodGlucose]
     @Published var tempBasals: [PumpHistoryEvent]
     @Published var boluses: [PumpHistoryEvent]
@@ -22,16 +24,38 @@ class ChartModel: ObservableObject {
     @Published var displayXgridLines: Bool
     @Published var displayYgridLines: Bool
     @Published var thresholdLines: Bool
+    @Published var latestOverride: Override?
     @Published var overrideHistory: [OverrideHistory]
     @Published var minimumSMB: Decimal
+    @Published var insulinDIA: Decimal
+    @Published var insulinPeak: Decimal
     @Published var maxBolus: Decimal
     @Published var maxBolusValue: Decimal
+    @Published var maxCarbsValue: Decimal
+    @Published var maxIOB: Decimal
+    @Published var maxCOB: Decimal
     @Published var useInsulinBars: Bool
     @Published var screenHours: Int
+    @Published var fpus: Bool
+    @Published var fpuAmounts: Bool
+    @Published var showInsulinActivity: Bool
+    @Published var showCobChart: Bool
+    @Published var secondaryChartBackdrop: Bool
+    @Published var inRangeAreaFill: Bool
+    @Published var chartGlucosePeaks: Bool
+    @Published var insulinActivityGridLines: Bool
+    @Published var insulinActivityLabels: Bool
+    @Published var yGridLabels: Bool
+    @Published var showPredictionsLegend: Bool
+    @Published var iob: Decimal?
+    @Published var hidePredictions: Bool
+    @Published var useCarbBars: Bool
 
     init(
         suggestion: Suggestion?,
         glucose: [BloodGlucose],
+        activity: [IOBTick0],
+        cob: [IOBData],
         isManual: [BloodGlucose],
         tempBasals: [PumpHistoryEvent],
         boluses: [PumpHistoryEvent],
@@ -51,15 +75,37 @@ class ChartModel: ObservableObject {
         displayXgridLines: Bool,
         displayYgridLines: Bool,
         thresholdLines: Bool,
+        latestOverride: Override?,
         overrideHistory: [OverrideHistory],
         minimumSMB: Decimal,
+        insulinDIA: Decimal,
+        insulinPeak: Decimal,
         maxBolus: Decimal,
         maxBolusValue: Decimal,
+        maxCarbsValue: Decimal,
+        maxIOB: Decimal,
+        maxCOB: Decimal,
         useInsulinBars: Bool,
-        screenHours: Int
+        screenHours: Int,
+        fpus: Bool,
+        fpuAmounts: Bool,
+        showInsulinActivity: Bool,
+        showCobChart: Bool,
+        secondaryChartBackdrop: Bool,
+        inRangeAreaFill: Bool,
+        chartGlucosePeaks: Bool,
+        insulinActivityGridLines: Bool,
+        insulinActivityLabels: Bool,
+        yGridLabels: Bool,
+        showPredictionsLegend: Bool,
+        iob: Decimal?,
+        hidePredictions: Bool,
+        useCarbBars: Bool
     ) {
         self.suggestion = suggestion
         self.glucose = glucose
+        self.activity = activity
+        self.cob = cob
         self.isManual = isManual
         self.tempBasals = tempBasals
         self.boluses = boluses
@@ -79,11 +125,31 @@ class ChartModel: ObservableObject {
         self.displayXgridLines = displayXgridLines
         self.displayYgridLines = displayYgridLines
         self.thresholdLines = thresholdLines
+        self.latestOverride = latestOverride
         self.overrideHistory = overrideHistory
         self.minimumSMB = minimumSMB
+        self.insulinDIA = insulinDIA
+        self.insulinPeak = insulinPeak
         self.maxBolus = maxBolus
         self.maxBolusValue = maxBolusValue
+        self.maxCarbsValue = maxCarbsValue
+        self.maxIOB = maxIOB
+        self.maxCOB = maxCOB
         self.useInsulinBars = useInsulinBars
         self.screenHours = screenHours
+        self.fpus = fpus
+        self.fpuAmounts = fpuAmounts
+        self.showInsulinActivity = showInsulinActivity
+        self.showCobChart = showCobChart
+        self.secondaryChartBackdrop = secondaryChartBackdrop
+        self.inRangeAreaFill = inRangeAreaFill
+        self.chartGlucosePeaks = chartGlucosePeaks
+        self.insulinActivityGridLines = insulinActivityGridLines
+        self.insulinActivityLabels = insulinActivityLabels
+        self.yGridLabels = yGridLabels
+        self.showPredictionsLegend = showPredictionsLegend
+        self.iob = iob
+        self.hidePredictions = hidePredictions
+        self.useCarbBars = useCarbBars
     }
 }

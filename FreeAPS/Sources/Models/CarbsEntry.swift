@@ -4,17 +4,18 @@ struct CarbsEntry: JSON, Equatable, Hashable {
     let id: String?
     var createdAt: Date
     let actualDate: Date?
-    let carbs: Decimal
+    var carbs: Decimal
     let fat: Decimal?
     let protein: Decimal?
     let note: String?
     let enteredBy: String?
     let isFPU: Bool?
-    let fpuID: String?
 
     static let manual = "iAPS"
+    static let watch = "iAPS Watch"
     static let remote = "Nightscout operator"
     static let appleHealth = "applehealth"
+    static let shortcut = "iAPS shortcut"
 
     static func == (lhs: CarbsEntry, rhs: CarbsEntry) -> Bool {
         lhs.createdAt == rhs.createdAt
@@ -36,6 +37,5 @@ extension CarbsEntry {
         case note
         case enteredBy
         case isFPU
-        case fpuID
     }
 }

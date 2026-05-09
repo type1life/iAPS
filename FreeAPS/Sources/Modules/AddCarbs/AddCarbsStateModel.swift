@@ -20,14 +20,14 @@ extension AddCarbs {
         @Published var maxCarbs: Decimal = 0
         @Published var note: String = ""
         @Published var id_: String = ""
-        @Published var summary: String = ""
         @Published var skipBolus: Bool = false
         @Published var id: String?
         @Published var hypoTreatment = false
         @Published var presetToEdit: Presets?
         @Published var edit = false
+        @Published var ai = false
 
-        @Published var combinedPresets: [(preset: Presets?, portions: Int)] = []
+        @Published var combinedPresets: [(preset: Presets?, portions: Double)] = []
 
         let now = Date.now
 
@@ -40,6 +40,7 @@ extension AddCarbs {
             maxCarbs = settings.settings.maxCarbs
             skipBolus = settingsManager.settings.skipBolusScreenAfterCarbs
             useFPUconversion = settingsManager.settings.useFPUconversion
+            ai = settingsManager.settings.ai
         }
 
         func add(_ continue_: Bool, fetch: Bool) {
@@ -59,18 +60,54 @@ extension AddCarbs {
                 protein: protein,
                 note: note,
                 enteredBy: CarbsEntry.manual,
-                isFPU: false, fpuID: UUID().uuidString
+                isFPU: false
             )]
-            carbsStorage.storeCarbs(carbsToStore)
+            add(continue_, fetch: fetch, carbsToStore: carbsToStore)
+        }
 
+        func addAIFood(_ continue_: Bool, fetch: Bool, food: FoodItemDetailed, date: Date?) {
+            var carbs = food.nutrientInThisPortion(.carbs) ?? 0
+            let fat = food.nutrientInThisPortion(.fat) ?? 0
+            let protein = food.nutrientInThisPortion(.protein) ?? 0
+            guard carbs > 0 || fat > 0 || protein > 0 else {
+                showModal(for: nil)
+                return
+            }
+            carbs = min(carbs, maxCarbs)
+            id_ = UUID().uuidString
+
+            let carbsToStore = [CarbsEntry(
+                id: id_,
+                createdAt: now,
+                actualDate: date,
+                carbs: carbs,
+                fat: fat,
+                protein: protein,
+                note: nil,
+                enteredBy: CarbsEntry.manual,
+                isFPU: false
+            )]
+            add(continue_, fetch: fetch, carbsToStore: carbsToStore)
+        }
+
+        func add(_ continue_: Bool, fetch: Bool, carbsToStore: [CarbsEntry]) {
             if hypoTreatment { hypo() }
+            let carbs = carbsToStore.map(\.carbs).reduce(0, +)
+            let fat = carbsToStore.compactMap(\.fat).reduce(0, +)
+            let protein = carbsToStore.compactMap(\.protein).reduce(0, +)
+            let empty = carbs <= 0 && fat <= 0 && protein <= 0
 
             if (skipBolus && !continue_ && !fetch) || hypoTreatment {
+                carbsStorage.storeCarbs(carbsToStore)
                 apsManager.determineBasalSync()
                 showModal(for: nil)
             } else if carbs > 0 {
                 saveToCoreData(carbsToStore)
                 showModal(for: .bolus(waitForSuggestion: true, fetch: true))
+            } else if !empty {
+                carbsStorage.storeCarbs(carbsToStore)
+                apsManager.determineBasalSync()
+                showModal(for: nil)
             } else {
                 hideModal()
             }
@@ -88,18 +125,18 @@ extension AddCarbs {
 
         func removePresetFromNewMeal() {
             if let index = combinedPresets.firstIndex(where: { $0.preset == selection }) {
-                if combinedPresets[index].portions > 1 {
-                    combinedPresets[index].portions -= 1
-                } else if combinedPresets[index].portions == 1 {
+                if combinedPresets[index].portions > 0.5 {
+                    combinedPresets[index].portions -= 0.5
+                } else if combinedPresets[index].portions == 0.5 {
                     combinedPresets.remove(at: index)
                     selection = nil
                 }
             }
         }
 
-        func addPresetToNewMeal() {
+        func addPresetToNewMeal(half: Bool = false) {
             if let index = combinedPresets.firstIndex(where: { $0.preset == selection }) {
-                combinedPresets[index].portions += 1
+                combinedPresets[index].portions += (half ? 0.5 : 1)
             } else {
                 combinedPresets.append((selection, 1))
             }
@@ -124,22 +161,23 @@ extension AddCarbs {
                     .reduce(0, +)
                 let totProtein = combinedPresets
                     .compactMap({ each in (each.preset?.protein ?? 0) as Decimal * Decimal(each.portions) }).reduce(0, +)
+                let margins: Decimal = 1.8
 
-                if carbs > totCarbs {
+                if carbs > totCarbs + margins {
                     presetsString.append("+ \(carbs - totCarbs) carbs")
-                } else if carbs < totCarbs {
+                } else if carbs + margins < totCarbs {
                     presetsString.append("- \(totCarbs - carbs) carbs")
                 }
 
-                if fat > totFat {
+                if fat > totFat + margins {
                     presetsString.append("+ \(fat - totFat) fat")
-                } else if fat < totFat {
+                } else if fat + margins < totFat {
                     presetsString.append("- \(totFat - fat) fat")
                 }
 
-                if protein > totProtein {
+                if protein > totProtein + margins {
                     presetsString.append("+ \(protein - totProtein) protein")
-                } else if protein < totProtein {
+                } else if protein + margins < totProtein {
                     presetsString.append("- \(totProtein - protein) protein")
                 }
             }
@@ -169,27 +207,27 @@ extension AddCarbs {
         func subtract() {
             let presetCarbs = ((selection?.carbs ?? 0) as NSDecimalNumber) as Decimal
             if carbs != 0, carbs - presetCarbs >= 0 {
-                carbs -= presetCarbs
+                carbs -= presetCarbs * 0.5
             } else { carbs = 0 }
 
             let presetFat = ((selection?.fat ?? 0) as NSDecimalNumber) as Decimal
             if fat != 0, presetFat >= 0 {
-                fat -= presetFat
+                fat -= presetFat * 0.5
             } else { fat = 0 }
 
             let presetProtein = ((selection?.protein ?? 0) as NSDecimalNumber) as Decimal
             if protein != 0, presetProtein >= 0 {
-                protein -= presetProtein
+                protein -= presetProtein * 0.5
             } else { protein = 0 }
 
             removePresetFromNewMeal()
         }
 
         func plus() {
-            carbs += ((selection?.carbs ?? 0) as NSDecimalNumber) as Decimal
-            fat += ((selection?.fat ?? 0) as NSDecimalNumber) as Decimal
-            protein += ((selection?.protein ?? 0) as NSDecimalNumber) as Decimal
-            addPresetToNewMeal()
+            carbs += (((selection?.carbs ?? 0) as NSDecimalNumber) as Decimal * 0.5)
+            fat += (((selection?.fat ?? 0) as NSDecimalNumber) as Decimal * 0.5)
+            protein += (((selection?.protein ?? 0) as NSDecimalNumber) as Decimal * 0.5)
+            addPresetToNewMeal(half: true)
         }
 
         func addU(_ selection: Presets?) {
@@ -200,21 +238,11 @@ extension AddCarbs {
         }
 
         func saveToCoreData(_ stored: [CarbsEntry]) {
-            coredataContext.performAndWait {
-                let save = Meals(context: coredataContext)
-                if let entry = stored.first {
-                    save.createdAt = now
-                    save.actualDate = entry.actualDate ?? Date.now
-                    save.id = entry.id ?? ""
-                    save.fpuID = entry.fpuID ?? ""
-                    save.carbs = Double(entry.carbs)
-                    save.fat = Double(entry.fat ?? 0)
-                    save.protein = Double(entry.protein ?? 0)
-                    save.note = entry.note
-                    try? coredataContext.save()
-                }
-                print("meals 1: ID: " + (save.id ?? "").description + " FPU ID: " + (save.fpuID ?? "").description)
-            }
+            CoreDataStorage().saveMeal(stored, now: now)
+        }
+
+        private var empty: Bool {
+            carbs <= 0 && fat <= 0 && protein <= 0
         }
 
         private func hypo() {

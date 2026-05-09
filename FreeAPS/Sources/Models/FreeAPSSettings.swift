@@ -6,14 +6,11 @@ struct FreeAPSSettings: JSON, Equatable {
     var allowAnnouncements: Bool = false
     var useAutotune: Bool = false
     var isUploadEnabled: Bool = false
-    var useLocalGlucoseSource: Bool = false
-    var localGlucosePort: Int = 8080
+    var nightscoutFetchEnabled: Bool = true
     var debugOptions: Bool = false
     var insulinReqPercentage: Decimal = 70
     var skipBolusScreenAfterCarbs: Bool = false
     var displayHR: Bool = false
-    var cgm: CGMType = .nightscout
-    var uploadGlucose: Bool = true
     var useCalendar: Bool = false
     var displayCalendarIOBandCOB: Bool = false
     var displayCalendarEmojis: Bool = false
@@ -37,11 +34,19 @@ struct FreeAPSSettings: JSON, Equatable {
     var high: Decimal = 145
     var low: Decimal = 70
     var uploadStats: Bool = false
+    var uploadLogs: Bool = false
     var hours: Int = 6
     var xGridLines: Bool = true
     var yGridLines: Bool = true
+    var yGridLabels: Bool = true
     var oneDimensionalGraph: Bool = false
     var rulerMarks: Bool = false
+    var inRangeAreaFill: Bool = false
+    var secondaryChartBackdrop: Bool = true
+    var insulinActivityGridLines: Bool = true
+    var insulinActivityLabels: Bool = true
+    var chartGlucosePeaks: Bool = false
+    var showPredictionsLegend: Bool = true
     var maxCarbs: Decimal = 1000
     var displayFatAndProteinOnWatch: Bool = false
     var confirmBolusFaster: Bool = false
@@ -55,8 +60,25 @@ struct FreeAPSSettings: JSON, Equatable {
     var liveActivityChart = false
     var liveActivityChartShowPredictions = true
     var useTargetButton: Bool = false
-    var alwaysUseColors: Bool = true
+    var alwaysUseColors: Bool = false
     var timeSettings: Bool = true
+    var disable15MinTrend: Bool = false
+    var hidePredictions: Bool = false
+    // Sounds
+    var hypoSound: String = "Default"
+    var hyperSound: String = "Default"
+    var ascending: String = "Default"
+    var descending: String = "Default"
+    var carbSound: String = "Default"
+    var bolusFailure: String = "Silent"
+    var missingLoops = true
+    // Alerts
+    var lowAlert: Bool = true
+    var highAlert: Bool = true
+    var ascendingAlert: Bool = true
+    var descendingAlert: Bool = true
+    var carbsRequiredAlert: Bool = true
+    //
     var profilesOrTempTargets: Bool = false
     var allowBolusShortcut: Bool = false
     var allowedRemoteBolusAmount: Decimal = 0.0
@@ -64,7 +86,6 @@ struct FreeAPSSettings: JSON, Equatable {
     var minumimPrediction: Bool = true
     var minimumSMB: Decimal = 0.3
     var useInsulinBars: Bool = false
-    var disableCGMError: Bool = true
     var skipGlucoseChart: Bool = false
     var birthDate = Date.distantPast
     var sexSetting: Int = 3
@@ -73,16 +94,33 @@ struct FreeAPSSettings: JSON, Equatable {
     var allowDilution: Bool = false
     var hideInsulinBadge: Bool = false
     var extended_overrides = false
-    var extendHomeView = true
+    var displayExpiration = false
+    var displaySAGE = true
+    var sensorDays: Double = 10
+    var fpus: Bool = true
+    var fpuAmounts: Bool = false
+    var carbButton: Bool = true
+    var profileButton: Bool = true
+    var showInsulinActivity: Bool = false
+    var showCobChart: Bool = false
+    var glucoseOverrideThreshold: Decimal = 100
+    var glucoseOverrideThresholdActive: Bool = false
+    var glucoseOverrideThresholdActiveDown: Bool = false
+    var glucoseOverrideThresholdDown: Decimal = 100
+    var noCarbs: Bool = false
+    var useCarbBars: Bool = false
+    // ColorScheme
+    var lightMode: LightMode = .auto
     // Auto ISF
     var autoisf: Bool = false
+    var autocr: Bool = false
     var smbDeliveryRatioBGrange: Decimal = 0
     var smbDeliveryRatioMin: Decimal = 0.5
     var smbDeliveryRatioMax: Decimal = 0.5
     var autoISFhourlyChange: Decimal = 1
     var higherISFrangeWeight: Decimal = 0
     var lowerISFrangeWeight: Decimal = 0
-    var postMealISFweight: Decimal = 0.01
+    var postMealISFweight: Decimal = 0
     var enableBGacceleration: Bool = true
     var bgAccelISFweight: Decimal = 0
     var bgBrakeISFweight: Decimal = 0.10
@@ -104,6 +142,28 @@ struct FreeAPSSettings: JSON, Equatable {
     var ketoProtectBasalPercent: Decimal = 20
     var ketoProtectAbsolut: Bool = false
     var ketoProtectBasalAbsolut: Decimal = 0
+    // 1-min loops
+    var allowOneMinuteLoop: Bool = false // allow running loops every minute
+    var allowOneMinuteGlucose: Bool = false // allow sending 1-minute readings to oref, even if loops are with 5-minute intervals
+    var ai: Bool = true
+    var nightTime = NightTimeConfiguration.default
+    var autoisfEffective: Bool {
+        autoisf && !isNighttime
+    }
+
+    var isNighttime: Bool {
+        guard nightTime.enabled else { return false }
+
+        let calendar = Calendar.current.dateComponents([.hour, .minute], from: .now)
+        guard let h = calendar.hour, let m = calendar.minute else { return false }
+
+        let now = h * 60 + m
+        let start = nightTime.startHour * 60 + nightTime.startMinute
+        let end = nightTime.endHour * 60 + nightTime.endMinute
+
+        return (start > end && (now >= start || now < end)) ||
+            (start <= end && now >= start && now < end)
+    }
 }
 
 extension FreeAPSSettings: Decodable {
@@ -132,16 +192,28 @@ extension FreeAPSSettings: Decodable {
             settings.isUploadEnabled = isUploadEnabled
         }
 
-        if let useLocalGlucoseSource = try? container.decode(Bool.self, forKey: .useLocalGlucoseSource) {
-            settings.useLocalGlucoseSource = useLocalGlucoseSource
-        }
-
-        if let localGlucosePort = try? container.decode(Int.self, forKey: .localGlucosePort) {
-            settings.localGlucosePort = localGlucosePort
+        if let nightscoutFetchEnabled = try? container.decode(Bool.self, forKey: .nightscoutFetchEnabled) {
+            settings.nightscoutFetchEnabled = nightscoutFetchEnabled
         }
 
         if let debugOptions = try? container.decode(Bool.self, forKey: .debugOptions) {
             settings.debugOptions = debugOptions
+        }
+
+        if let fpus = try? container.decode(Bool.self, forKey: .fpus) {
+            settings.fpus = fpus
+        }
+
+        if let hidePredictions = try? container.decode(Bool.self, forKey: .hidePredictions) {
+            settings.hidePredictions = hidePredictions
+        }
+
+        if let useCarbBars = try? container.decode(Bool.self, forKey: .useCarbBars) {
+            settings.useCarbBars = useCarbBars
+        }
+
+        if let fpuAmounts = try? container.decode(Bool.self, forKey: .fpuAmounts) {
+            settings.fpuAmounts = fpuAmounts
         }
 
         if let insulinReqPercentage = try? container.decode(Decimal.self, forKey: .insulinReqPercentage) {
@@ -152,6 +224,10 @@ extension FreeAPSSettings: Decodable {
             settings.skipBolusScreenAfterCarbs = skipBolusScreenAfterCarbs
         }
 
+        if let noCarbs = try? container.decode(Bool.self, forKey: .noCarbs) {
+            settings.noCarbs = noCarbs
+        }
+
         if let displayHR = try? container.decode(Bool.self, forKey: .displayHR) {
             settings.displayHR = displayHR
             // compatibility if displayOnWatch is not available in json files
@@ -160,14 +236,6 @@ extension FreeAPSSettings: Decodable {
 
         if let displayOnWatch = try? container.decode(AwConfig.self, forKey: .displayOnWatch) {
             settings.displayOnWatch = displayOnWatch
-        }
-
-        if let cgm = try? container.decode(CGMType.self, forKey: .cgm) {
-            settings.cgm = cgm
-        }
-
-        if let uploadGlucose = try? container.decode(Bool.self, forKey: .uploadGlucose) {
-            settings.uploadGlucose = uploadGlucose
         }
 
         if let useCalendar = try? container.decode(Bool.self, forKey: .useCalendar) {
@@ -206,6 +274,30 @@ extension FreeAPSSettings: Decodable {
             settings.fattyMeals = fattyMeals
         }
 
+        if let lowAlert = try? container.decode(Bool.self, forKey: .lowAlert) {
+            settings.lowAlert = lowAlert
+        }
+
+        if let highAlert = try? container.decode(Bool.self, forKey: .highAlert) {
+            settings.highAlert = highAlert
+        }
+
+        if let ascendingAlert = try? container.decode(Bool.self, forKey: .ascendingAlert) {
+            settings.ascendingAlert = ascendingAlert
+        }
+
+        if let descendingAlert = try? container.decode(Bool.self, forKey: .descendingAlert) {
+            settings.descendingAlert = descendingAlert
+        }
+
+        if let carbsRequiredAlert = try? container.decode(Bool.self, forKey: .carbsRequiredAlert) {
+            settings.carbsRequiredAlert = carbsRequiredAlert
+        }
+
+        if let disable15MinTrend = try? container.decode(Bool.self, forKey: .disable15MinTrend) {
+            settings.disable15MinTrend = disable15MinTrend
+        }
+
         if let fattyMealFactor = try? container.decode(Decimal.self, forKey: .fattyMealFactor) {
             settings.fattyMealFactor = fattyMealFactor
         }
@@ -234,11 +326,31 @@ extension FreeAPSSettings: Decodable {
             settings.useAlarmSound = useAlarmSound
         }
 
+        if let carbButton = try? container.decode(Bool.self, forKey: .carbButton) {
+            settings.carbButton = carbButton
+        }
+
+        if let profileButton = try? container.decode(Bool.self, forKey: .profileButton) {
+            settings.profileButton = profileButton
+        }
+
+        if let showInsulinActivity = try? container.decode(Bool.self, forKey: .showInsulinActivity) {
+            settings.showInsulinActivity = showInsulinActivity
+        }
+
+        if let showCobChart = try? container.decode(Bool.self, forKey: .showCobChart) {
+            settings.showCobChart = showCobChart
+        }
+
         if let addSourceInfoToGlucoseNotifications = try? container.decode(
             Bool.self,
             forKey: .addSourceInfoToGlucoseNotifications
         ) {
             settings.addSourceInfoToGlucoseNotifications = addSourceInfoToGlucoseNotifications
+        }
+
+        if let lightMode = try? container.decode(LightMode.self, forKey: .lightMode) {
+            settings.lightMode = lightMode
         }
 
         if let lowGlucose = try? container.decode(Decimal.self, forKey: .lowGlucose) {
@@ -269,6 +381,10 @@ extension FreeAPSSettings: Decodable {
             settings.high = high
         }
 
+        if let sensorDays = try? container.decode(Double.self, forKey: .sensorDays) {
+            settings.sensorDays = sensorDays
+        }
+
         if let uploadStats = try? container.decode(Bool.self, forKey: .uploadStats) {
             settings.uploadStats = uploadStats
         }
@@ -285,12 +401,40 @@ extension FreeAPSSettings: Decodable {
             settings.yGridLines = yGridLines
         }
 
+        if let yGridLabels = try? container.decode(Bool.self, forKey: .yGridLabels) {
+            settings.yGridLabels = yGridLabels
+        }
+
         if let oneDimensionalGraph = try? container.decode(Bool.self, forKey: .oneDimensionalGraph) {
             settings.oneDimensionalGraph = oneDimensionalGraph
         }
 
         if let rulerMarks = try? container.decode(Bool.self, forKey: .rulerMarks) {
             settings.rulerMarks = rulerMarks
+        }
+
+        if let inRangeAreaFill = try? container.decode(Bool.self, forKey: .inRangeAreaFill) {
+            settings.inRangeAreaFill = inRangeAreaFill
+        }
+
+        if let secondaryChartBackdrop = try? container.decode(Bool.self, forKey: .secondaryChartBackdrop) {
+            settings.secondaryChartBackdrop = secondaryChartBackdrop
+        }
+
+        if let insulinActivityGridLines = try? container.decode(Bool.self, forKey: .insulinActivityGridLines) {
+            settings.insulinActivityGridLines = insulinActivityGridLines
+        }
+
+        if let insulinActivityLabels = try? container.decode(Bool.self, forKey: .insulinActivityLabels) {
+            settings.insulinActivityLabels = insulinActivityLabels
+        }
+
+        if let chartGlucosePeaks = try? container.decode(Bool.self, forKey: .chartGlucosePeaks) {
+            settings.chartGlucosePeaks = chartGlucosePeaks
+        }
+
+        if let showPredictionsLegend = try? container.decode(Bool.self, forKey: .showPredictionsLegend) {
+            settings.showPredictionsLegend = showPredictionsLegend
         }
 
         if let overrideHbA1cUnit = try? container.decode(Bool.self, forKey: .overrideHbA1cUnit) {
@@ -345,6 +489,34 @@ extension FreeAPSSettings: Decodable {
             settings.timeSettings = timeSettings
         }
 
+        if let hypoSound = try? container.decode(String.self, forKey: .hypoSound) {
+            settings.hypoSound = hypoSound
+        }
+
+        if let hyperSound = try? container.decode(String.self, forKey: .hyperSound) {
+            settings.hyperSound = hyperSound
+        }
+
+        if let ascending = try? container.decode(String.self, forKey: .ascending) {
+            settings.ascending = ascending
+        }
+
+        if let descending = try? container.decode(String.self, forKey: .descending) {
+            settings.descending = descending
+        }
+
+        if let carbSound = try? container.decode(String.self, forKey: .carbSound) {
+            settings.carbSound = carbSound
+        }
+
+        if let bolusFailure = try? container.decode(String.self, forKey: .bolusFailure) {
+            settings.bolusFailure = bolusFailure
+        }
+
+        if let missingLoops = try? container.decode(Bool.self, forKey: .missingLoops) {
+            settings.missingLoops = missingLoops
+        }
+
         if let profilesOrTempTargets = try? container.decode(Bool.self, forKey: .profilesOrTempTargets) {
             settings.profilesOrTempTargets = profilesOrTempTargets
         }
@@ -373,16 +545,8 @@ extension FreeAPSSettings: Decodable {
             settings.useInsulinBars = useInsulinBars
         }
 
-        if let disableCGMError = try? container.decode(Bool.self, forKey: .disableCGMError) {
-            settings.disableCGMError = disableCGMError
-        }
-
         if let skipGlucoseChart = try? container.decode(Bool.self, forKey: .skipGlucoseChart) {
             settings.skipGlucoseChart = skipGlucoseChart
-        }
-
-        if let birthDate = try? container.decode(Date.self, forKey: .birthDate) {
-            settings.birthDate = birthDate
         }
 
         if let birthDate = try? container.decode(Date.self, forKey: .birthDate) {
@@ -413,12 +577,20 @@ extension FreeAPSSettings: Decodable {
             settings.extended_overrides = extended_overrides
         }
 
-        if let extendHomeView = try? container.decode(Bool.self, forKey: .extendHomeView) {
-            settings.extendHomeView = extendHomeView
+        if let displayExpiration = try? container.decode(Bool.self, forKey: .displayExpiration) {
+            settings.displayExpiration = displayExpiration
+        }
+
+        if let displaySAGE = try? container.decode(Bool.self, forKey: .displaySAGE) {
+            settings.displaySAGE = displaySAGE
         }
         // AutoISF
         if let autoisf = try? container.decode(Bool.self, forKey: .autoisf) {
             settings.autoisf = autoisf
+        }
+
+        if let autocr = try? container.decode(Bool.self, forKey: .autocr) {
+            settings.autocr = autocr
         }
 
         if let enableBGacceleration = try? container.decode(Bool.self, forKey: .enableBGacceleration) {
@@ -509,6 +681,24 @@ extension FreeAPSSettings: Decodable {
             settings.autoisf_min = autoisf_min
         }
 
+        if let glucoseOverrideThreshold = try? container.decode(Decimal.self, forKey: .glucoseOverrideThreshold) {
+            settings.glucoseOverrideThreshold = glucoseOverrideThreshold
+        }
+
+        if let glucoseOverrideThresholdActive = try? container.decode(Bool.self, forKey: .glucoseOverrideThresholdActive) {
+            settings.glucoseOverrideThresholdActive = glucoseOverrideThresholdActive
+        }
+
+        if let glucoseOverrideThresholdDown = try? container.decode(Decimal.self, forKey: .glucoseOverrideThresholdDown) {
+            settings.glucoseOverrideThresholdDown = glucoseOverrideThresholdDown
+        }
+
+        if let glucoseOverrideThresholdActiveDown = try? container
+            .decode(Bool.self, forKey: .glucoseOverrideThresholdActiveDown)
+        {
+            settings.glucoseOverrideThresholdActiveDown = glucoseOverrideThresholdActiveDown
+        }
+
         // Auto ISF Keto Protection
         if let ketoProtectBasalAbsolut = try? container.decode(Decimal.self, forKey: .ketoProtectBasalAbsolut) {
             settings.ketoProtectBasalAbsolut = ketoProtectBasalAbsolut
@@ -526,6 +716,34 @@ extension FreeAPSSettings: Decodable {
             settings.ketoProtectAbsolut = ketoProtectAbsolut
         }
 
+        // 1-minute loops
+        if let allowOneMinuteLoop = try? container.decode(Bool.self, forKey: .allowOneMinuteLoop) {
+            settings.allowOneMinuteLoop = allowOneMinuteLoop
+        }
+        if let allowOneMinuteGlucose = try? container.decode(Bool.self, forKey: .allowOneMinuteGlucose) {
+            settings.allowOneMinuteGlucose = allowOneMinuteGlucose
+        }
+
+        if let ai = try? container.decode(Bool.self, forKey: .ai) {
+            settings.ai = ai
+        }
+
+        if let uploadLogs = try? container.decode(Bool.self, forKey: .uploadLogs) {
+            settings.uploadLogs = uploadLogs
+        }
+
+        if let nightTime = try? container.decode(NightTimeConfiguration.self, forKey: .nightTime) {
+            settings.nightTime = nightTime
+        }
+
         self = settings
     }
+}
+
+enum LightMode: String, JSON, Identifiable, CaseIterable {
+    case light = "Light"
+    case dark = "Dark"
+    case auto = "Auto"
+
+    var id: LightMode { self }
 }

@@ -1,4 +1,4 @@
-import LoopKitUI
+@preconcurrency import LoopKitUI
 import SwiftUI
 
 extension StateColorPalette {
@@ -26,7 +26,8 @@ extension ChartColorPalette {
             axisLabel: .axisLabelColor,
             grid: .gridColor,
             glucoseTint: .glucoseTintColor,
-            insulinTint: .insulinTintColor
+            insulinTint: .insulinTintColor,
+            carbTint: .carbTintColor
         )
     }
 }

@@ -5,14 +5,19 @@ import Swinject
 
 extension Main {
     final class StateModel: BaseStateModel<Provider> {
+        @Injected() var broadcaster: Broadcaster!
         private(set) var modal: Modal?
         @Published var isModalPresented = false
         @Published var isSecondaryModalPresented = false
         @Published var secondaryModalView: AnyView? = nil
+        @Published var lightMode = LightMode.auto
+        @Published var shouldPreventModalDismiss = false
 
         override func subscribe() {
+            lightMode = settingsManager.settings.lightMode
+
             router.mainModalScreen
-                .map { $0?.modal(resolver: self.resolver!) }
+                .map { $0?.modal(resolver: self.resolver) }
                 .removeDuplicates { $0?.id == $1?.id }
                 .receive(on: DispatchQueue.main)
                 .sink { modal in
@@ -68,12 +73,11 @@ extension Main {
                         view.buttonTapHandler = { _ in
                             SwiftMessages.hide()
                             // display the pump configuration immediatly
-                            if let pump = self.provider.deviceManager.pumpManager,
-                               let bluetooth = self.provider.bluetoothProvider
+                            if let pump = self.provider.deviceManager.pumpManager
                             {
                                 let view = PumpConfig.PumpSettingsView(
                                     pumpManager: pump,
-                                    bluetoothManager: bluetooth,
+                                    deviceManager: self.provider.deviceManager,
                                     completionDelegate: self
                                 ).asAny()
                                 self.router.mainSecondaryModalView.send(view)
@@ -103,6 +107,8 @@ extension Main {
                     self.router.mainSecondaryModalView.send(nil)
                 }
                 .store(in: &lifetime)
+
+            broadcaster.register(SettingsObserver.self, observer: self)
         }
     }
 }
@@ -111,5 +117,11 @@ extension Main.StateModel: CompletionDelegate {
     func completionNotifyingDidComplete(_: CompletionNotifying) {
         // close the window
         router.mainSecondaryModalView.send(nil)
+    }
+}
+
+extension Main.StateModel: SettingsObserver {
+    func settingsDidChange(_: FreeAPSSettings) {
+        lightMode = settingsManager.settings.lightMode
     }
 }

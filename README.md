@@ -1,83 +1,116 @@
-# iAPS
+# iAPS: Your Experimental Artificial Pancreas System for iOS
 
-## Introduction 
+iAPS is an advanced artificial pancreas system for iOS, built upon the foundation of Ivan Valkou's original `freeaps.git` Swift repository and powered by the **OpenAPS Reference (Master 0.7.1)** algorithms. After thousands of commits and the addition of many unique features, the app has been rebranded as iAPS under the new organization, Artificial Pancreas. We also leverage numerous frameworks published by the **Loop community** to bring you this robust system.
 
-iAPS - an artificial pancreas system for iOS based on [OpenAPS Reference](https://github.com/openaps/oref0) algorithms (Master 0.7.1) and Ivan Valkous stale Swift repo, freeaps.git.
+-----
 
-Thousands of commits later, with many new and unique features added, the iOS app has been renamed to iAPS under a new organisation, Artificial Pancreas. 
+## Get Started with iAPS
 
-iAPS uses lot of frameworks published by the Loop community. 
+Ready to explore iAPS? Here's how you can download and build the repository:
 
-## To download this repo: 
+### Download the Repo
 
-In Terminal:  
-git clone --branch=main https://github.com/artificial-pancreas/iaps.git  
-cd iaps  
-xed .  
+  * **Using Terminal:**
 
-Or using the GitHub interface: 
-Download and open in Xcode directly using the Code button: "Open with Xcode".  
+    clone and open workspace project in Xcode
+    ```bash
+    git clone --recurse-submodules --branch=main https://github.com/artificial-pancreas/iaps.git && cd iaps && xed .
+    ```
+### Update the the iaps project in your local clone 
 
-## To build directly in GitHub, without using Xcode: 
+  * **Using Terminal:**
 
-Instructions:  
-https://github.com/Artificial-Pancreas/iAPS/blob/main/fastlane/testflight.md   
-Instructions in greater detail, but not iAPS-specific:  
-https://loopkit.github.io/loopdocs/gh-actions/gh-overview/
- 
-## Please understand that iAPS is:  
-- highly experimental and evolving rapidly.
-- not CE or FDA approved for therapy.
+    ```
+    git pull
+    ```
 
-# Pumps
+### Update the iaps submodules
 
-- Omnipod EROS  
-- Omnipod DASH  
-- Medtronic 515 or 715 (any firmware)  
-- Medtronic 522 or 722 (any firmware)  
-- Medtronic 523 or 723 (firmware 2.4 or lower)  
-- Medtronic Worldwide Veo 554 or 754 (firmware 2.6A or lower)  
-- Medtronic Canadian/Australian Veo 554 or 754 (firmware 2.7A or lower)   
+  * **Using Terminal:**
 
-# CGM Sensors
+    ```
+    git submodule update --init --recursive
+    ```
 
-- Dexcom G5  
-- Dexcom G6   
-- Dexcom ONE
-- Dexcom ONE +   
-- Dexcom G7   
-- Libre 1   
-- Libre 2 (European)
-- Libre 2 Plus (European)  
-- Medtronic Enlite
-- Nightscout as CGM
+### Build Without Xcode (Directly in GitHub)
 
-# iPhone and iPod
+For instructions on how to build iAPS directly within GitHub, refer to these resources:
 
-iAPS app runs on iPhone or iPod. An iPhone 8 or newer is required. Minimum iOS 17.
+  * **iAPS-Specific Instructions:** [https://github.com/Artificial-Pancreas/iAPS/blob/main/fastlane/testflight.md](https://github.com/Artificial-Pancreas/iAPS/blob/main/fastlane/testflight.md)
+  * **General GitHub Actions Overview:** [https://loopkit.github.io/loopdocs/gh-actions/gh-overview/](https://loopkit.github.io/loopdocs/gh-actions/gh-overview/)
 
-# Documentation
+-----
 
-[Discord iAPS - Server ](https://discord.com/invite/ptkk2Y264Z)
+## Important Considerations
 
-[Facebook ](https://www.facebook.com/groups/403549385863967)
+Please understand that iAPS is:
 
-[iAPS documentation (under development)](https://iaps.readthedocs.io/en/latest/)
+  * **Highly experimental and rapidly evolving.**
+  * **Not CE or FDA approved for therapy.**
 
-[OpenAPS documentation](https://openaps.readthedocs.io/en/latest/)
+The Near Field Communication (NFC) capability requires a paid Apple developer membership, however if using Dexcom sensors with iAPS you don't need the NFC capability enabled in Xcode capability settings.
+Distributing and building TestFlight apps also requires a paid membership.
 
-[Crowdin Project for translation of iAPS](https://crowdin.com/project/iaps)  
-[![Crowdin](https://badges.crowdin.net/iaps/localized.svg)](https://crowdin.com/project/iaps)
+-----
 
-[Middleware code for iAPS](https://github.com/Jon-b-m/middleware)
+## Compatible Devices
 
-[ADD DASH PUMP and SETTINGS](https://loopkit.github.io/loopdocs/loop-3/omnipod/)
+### Insulin Pumps
 
+  * **Omnipod EROS**
+  * **Omnipod DASH**
+  * **Medtrum TouchCare Nano**
+  * **Dana:**
+      * Dana-I
+      * DanaRS (firmware 3 only)
+  * **Medtronic:**
+      * 515 or 715 (any firmware)
+      * 522 or 722 (any firmware)
+      * 523 or 723 (firmware 2.4 or lower)
+      * Worldwide Veo 554 or 754 (firmware 2.6A or lower)
+      * Canadian/Australian Veo 554 or 754 (firmware 2.7A or lower)
 
-# Contribute
+### CGM Sensors
 
-Code contributions as PRs are welcome!
+  * **Dexcom:**
+      * G5
+      * G6
+      * ONE
+      * ONE +
+      * G7
+  * **Libre:**
+      * 1
+      * 2 (European)
+      * 2 Plus (European)
+  * **Medtronic Enlite**
+  * **Nightscout** (as CGM)
 
-Translators can click the Crowdin link above  
+### iPhone and iPod Compatibility
 
-For questions or other contributions: jon.m@live.se
+The iAPS app runs on your **iPhone** or **iPod**. An **iPhone 8 or newer** is required, running a **minimum of iOS 17**.
+
+-----
+
+## Documentation and Community
+
+Connect with the iAPS community and find helpful resources here:
+
+  * **Discord iAPS Server:** [https://discord.com/invite/ptkk2Y264Z](https://discord.com/invite/ptkk2Y264Z)
+  * **Facebook Group:** [https://www.facebook.com/groups/403549385863967](https://www.facebook.com/groups/403549385863967)
+  * **iAPS Statistics:** [https://open-iaps.org](https://open-iaps.org)
+  * **iAPS Documentation (under development):** [https://iaps.readthedocs.io/en/latest/](https://iaps.readthedocs.io/en/latest/)
+  * **OpenAPS Documentation:** [https://openaps.readthedocs.io/en/latest/](https://openaps.readthedocs.io/en/latest/)
+  * **Crowdin Project for iAPS Translation:** [https://crowdin.com/project/iaps](https://crowdin.com/project/iaps)
+    [](https://crowdin.com/project/iaps) [![Crowdin](https://badges.crowdin.net/iaps/localized.svg)](https://crowdin.com/project/iaps)
+  * **Middleware code for iAPS:** [https://github.com/Jon-b-m/middleware](https://github.com/Jon-b-m/middleware)
+  * **Omnipod DASH Pump and Settings:** [https://loopkit.github.io/loopdocs/loop-3/omnipod/](https://loopkit.github.io/loopdocs/loop-3/omnipod/)
+
+-----
+
+## Contribute to iAPS
+
+We welcome your contributions to improve iAPS\!
+
+  * **Code contributions** via Pull Requests are highly encouraged.
+  * **Translators** can join our Crowdin project by clicking the link above.
+  * For **questions or other contributions**, please email jon.m@live.se.

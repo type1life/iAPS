@@ -16,7 +16,7 @@ extension DataTable {
         func pumpSettings() -> PumpSettings {
             storage.retrieve(OpenAPS.Settings.settings, as: PumpSettings.self)
                 ?? PumpSettings(from: OpenAPS.defaults(for: OpenAPS.Settings.settings))
-                ?? PumpSettings(insulinActionCurve: 6, maxBolus: 10, maxBasal: 2)
+                ?? PumpSettings(insulinActionCurve: 6, maxBolus: 10, maxBasal: 4)
         }
 
         func tempTargets() -> [TempTarget] {
@@ -31,8 +31,8 @@ extension DataTable {
             carbsStorage.recent()
         }
 
-        func deleteCarbs(_ treatement: Treatment) {
-            nightscoutManager.deleteCarbs(treatement, complexMeal: false)
+        func deleteCarbs(_ date: Date) {
+            nightscoutManager.deleteCarbs(date)
         }
 
         func deleteInsulin(_ treatement: Treatment) {
@@ -43,7 +43,7 @@ extension DataTable {
         }
 
         func glucose() -> [BloodGlucose] {
-            glucoseStorage.recent().sorted { $0.date > $1.date }
+            glucoseStorage.retrieveRaw().sorted { $0.date > $1.date }
         }
 
         func deleteGlucose(id: String) {

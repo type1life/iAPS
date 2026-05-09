@@ -3,12 +3,10 @@ import Foundation
 
 struct ListStateIntent: AppIntent {
     // Title of the action in the Shortcuts app
-    static var title: LocalizedStringResource = "List last state available with iAPS"
-
-    var stateIntent = StateIntentRequest()
+    static let title: LocalizedStringResource = "List last state available with iAPS"
 
     // Description of the action in the Shortcuts app
-    static var description = IntentDescription(
+    static let description = IntentDescription(
         "Allow to list the last Blood Glucose, trends, IOB and COB available in iAPS"
     )
 
@@ -17,6 +15,7 @@ struct ListStateIntent: AppIntent {
     }
 
     @MainActor func perform() async throws -> some ReturnsValue<StateiAPSResults> & ShowsSnippetView {
+        let stateIntent = StateIntentRequest()
         let glucoseValues = try? stateIntent.getLastBG()
         let iob_cob_value = try? stateIntent.getIOB_COB()
 
@@ -31,8 +30,8 @@ struct ListStateIntent: AppIntent {
             cob: iob_cob.cob,
             unit: stateIntent.settingsManager.settings.units
         )
-        let iob_text = String(format: "%.2f", iob_cob.iob)
-        let cob_text = String(format: "%.2f", iob_cob.cob)
+        // let iob_text = String(format: "%.2f", iob_cob.iob)
+        // let cob_text = String(format: "%.2f", iob_cob.cob)
         return .result(
             value: BG,
             view: ListStateView(state: BG)

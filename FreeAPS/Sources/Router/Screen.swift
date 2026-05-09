@@ -15,7 +15,7 @@ enum Screen: Identifiable, Hashable {
     case crEditor
     case targetsEditor
     case preferencesEditor
-    case addCarbs(editMode: Bool, override: Bool)
+    case addCarbs(editMode: Bool, override: Bool, mode: MealMode.Mode)
     case addTempTarget
     case bolus(waitForSuggestion: Bool, fetch: Bool)
     case manualTempBasal
@@ -23,7 +23,6 @@ enum Screen: Identifiable, Hashable {
     case dataTable
     case cgm
     case healthkit
-    case libreConfig
     case calibrations
     case notificationsConfig
     case fpuConfig
@@ -32,9 +31,11 @@ enum Screen: Identifiable, Hashable {
     case snooze
     case statistics
     case watch
-    case statisticsConfig
+    case uiConfig
+    case mainChartConfig
     case bolusCalculatorConfig
     case dynamicISF
+    case calendar
     case contactTrick
     case sharing
     case autoISF
@@ -68,8 +69,8 @@ extension Screen {
             TargetsEditor.RootView(resolver: resolver)
         case .preferencesEditor:
             PreferencesEditor.RootView(resolver: resolver)
-        case let .addCarbs(editMode, override):
-            AddCarbs.RootView(resolver: resolver, editMode: editMode, override: override)
+        case let .addCarbs(editMode, override, mode):
+            AddCarbs.RootView(resolver: resolver, editMode: editMode, override: override, mode: mode)
         case .addTempTarget:
             AddTempTarget.RootView(resolver: resolver)
         case let .bolus(waitForSuggestion, fetch):
@@ -84,8 +85,6 @@ extension Screen {
             CGM.RootView(resolver: resolver)
         case .healthkit:
             AppleHealthKit.RootView(resolver: resolver)
-        case .libreConfig:
-            LibreConfig.RootView(resolver: resolver)
         case .calibrations:
             Calibrations.RootView(resolver: resolver)
         case .notificationsConfig:
@@ -102,12 +101,16 @@ extension Screen {
             WatchConfig.RootView(resolver: resolver)
         case .statistics:
             Stat.RootView(resolver: resolver)
-        case .statisticsConfig:
-            StatConfig.RootView(resolver: resolver)
+        case .uiConfig:
+            UIUX.RootView(resolver: resolver)
+        case .mainChartConfig:
+            MainChartConfig.RootView(resolver: resolver)
         case .bolusCalculatorConfig:
             BolusCalculatorConfig.RootView(resolver: resolver)
         case .dynamicISF:
             Dynamic.RootView(resolver: resolver)
+        case .calendar:
+            CalendarShare.RootView(resolver: resolver)
         case .contactTrick:
             ContactTrick.RootView(resolver: resolver)
         case .sharing:

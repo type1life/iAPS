@@ -16,6 +16,15 @@
 /* Continue after added carbs without bolus */
 "Continue without bolus" = "Fortsätt utan bolus";
 
+/* History View */
+"No data." = "Ingen data.";
+
+/* Bolus View */
+"No Predictions. Failed loop suggestion." = "Inga blodsockerprognoser. Misslyckad loop.";
+
+/* Bolus View */
+"New Glucose Missing" = "Nytt blodsocker saknas";
+
 /* Continue after added meal without bolus */
 "Save Meal without bolus" = "Spara måltid utan bolus";
 
@@ -157,6 +166,15 @@
 /* Add carbs header and button in Watch app. You can skip the last " " space. It's just for differentiation */
 "Add Carbs " = "Lägg till";
 
+/* Home View */
+"Override" = "Undantag";
+
+/* Home View Message if no pump is connected */
+"No Pump" = "Ingen pump";
+
+/* Home View Message if open loop is active */
+"Open" = "Öppen";
+
 /*  */
 "Amount Carbs" = "Mängd kolhydrater";
 
@@ -172,6 +190,21 @@
 /* */
 "Are you sure?" = "Är du säker?";
 
+/* */
+"Clear Records" = "Rensa data";
+
+/* */
+"Delete CoreData database records" = "Ta bort CoreData - data";
+
+/* */
+"Delete NS records" = "Radera NS-data";
+
+/* */
+"All records in " = "Alla data i ";
+
+/* */
+" will be deleted!" = " kommer att raderas!";
+
 /* Bottom target temp */
 "Bottom target" = "Nedre målvärde";
 
@@ -180,6 +213,9 @@
 
 /*  */
 "Cancel Temp Target" = "Avbryt tillfälligt målvärde";
+
+/*  */
+"Cancel Temporary Target" = "Avbryt tillfälligt målvärde";
 
 /* Custom temp target */
 "Custom" = "Anpassad";
@@ -262,6 +298,9 @@
 /*  */
 "Autotune" = "Autotune";
 
+/* Debug option view Dynamic Variables */
+"Dynamic Variables" = "Dynamiska variabler";
+
 /*  */
 "Basal profile" = "Basalinställningar";
 
@@ -297,6 +336,9 @@
 
 /*  */
 "Schedule" = "Schema";
+
+/* */
+"(standard units / hour)" = "(standardenheter / timme)";
 
 /*  */
 "starts at" = "startar kl";
@@ -449,6 +491,9 @@ Enact a temp Basal or a temp target */
 /* Add Omnipod pump */
 "Add Omnipod" = "Lägg till Omnipod";
 
+/* Add Dana-i/RS pump */
+"Add Dana-i/RS" = "Lägg till Dana-i/RS";
+
 /* Add Simulator pump */
 "Add Simulator" = "Lägg till simulator";
 
@@ -598,10 +643,16 @@ Enact a temp Basal or a temp target */
 "Display on Watch" = "Visa på klocka";
 
 /* */
+"Display either Overrides or Temp Targets" = "Visa antingen knapp för profiler eller knapp för tillfälliga målvärden";
+
+/* */
 "Garmin Watch" = "Garmin - klocka";
 
 /* */
 "Add devices" = "Lägg till enhet";
+
+/* */
+"Profile Overrides Button / Temp Targets Button" = "Knapp för profiler / Tillfälliga målvärden";
 
 /* */
 "Glucose Target" = "Målvärde för glukos";
@@ -614,6 +665,9 @@ Enact a temp Basal or a temp target */
 
 /* */
 "ISF" = "ISF";
+
+/* */
+"% Override" = "% Undantag";
 
 /* */
 "The app Garmin Connect must be installed to use for iAPS.\n Go to App Store to download it" = "Appen 'Garmin Connect' måste  vara installerad för att kunna användas med iAPS.\n Gå till App Store för att ladda ner";
@@ -687,8 +741,23 @@ Enact a temp Basal or a temp target */
 /* Treatments list */
 "Treatments" = "Behandlingar";
 
+/* Add Insulin */
+"Add Insulin" = "Lägg till insulin";
+
+/* Add Glucose */
+"Add Glucose" = "Lägg till blodsocker";
+
+/* New Glucose */
+"New Glucose" = "Nytt blodsocker";
+
 /* Hypo Treatment Preset */
 "Treatment" = "Behandling";
+
+/* Hypo Treatment Default Value */
+"Default  📉" = "Standard 📉";
+
+/* Hypo Treatment Default Value */
+"None" = "Ingen";
 
 /* " min" in Treatments list */
 " min" = " min";
@@ -784,7 +853,7 @@ Enact a temp Basal or a temp target */
 "Pairinginfo" = "Parkopplingsinfo";
 
 /* */
-"PatchInfo" = "Patchinformation";
+"PatchInfo" = "Patch-information";
 
 /* */
 "Calibrationinfo" = "Kalibreringsinfo";
@@ -913,7 +982,10 @@ Enact a temp Basal or a temp target */
 "Sensor Info" = "SensorInfo";
 
 /* */
-"Sensor Age" = "Sensorålder";
+"Sensor Life-Span" = "Sensorlivslängd i dagar";
+
+/* */
+"When using %@ iAPS doesn't know the type of sensor used or the sensor life-span." = "Vid användning av %@ känner iAPS inte till vilken typ av sensor som används eller sensorns livslängd.";
 
 /* */
 "Sensor Age Left" = "Sensortid kvar";
@@ -961,7 +1033,7 @@ Enact a temp Basal or a temp target */
 "Delete CGM" = "Radera CGM";
 
 /* */
-"Are you sure you want to remove this cgm from loop?" = "Är du säker på att du vill ta bort denna CGM från iAPS?";
+"Are you sure you want to remove this cgm from iAPS?" = "Är du säker på att du vill ta bort denna CGM från iAPS?";
 
 /* */
 "There is no undo" = "Det går inte att ångra!";
@@ -1021,7 +1093,7 @@ Enact a temp Basal or a temp target */
 "Additional notification types" = "Ytterligare notistyper";
 
 /* */
-"Misc" = "Övrigt";
+"Miscellaneous" = "Diverse";
 
 /* */
 "Unit override" = "Åsidosätt enhet";
@@ -1104,17 +1176,24 @@ Enact a temp Basal or a temp target */
 /* Override Shortcut */
 "Activates an %@ Override Preset" = "Aktiverar en %@ - profil";
 
-/* Meal Prestes Shortcut */
-"Which meal preset would you like to use?" = "Vilken måltid vill du lägga till?";
+/* Suspend/Resume Shortcut */
+"Choose what to do with your pump" = "Vad vill du göra med din pump?";
 
-/* Meal Prestes Shortcut */
-"Are you sure you want to use the meal preset %@?" = "Är du säker att du vill lägga till måltiden %@?";
+/* Suspend/Resume Shortcut */
+"Are you sure you want to %@ your pump?" = "Är du säker på att du vill %@ din pump?";
 
-/* Meal Prestes Shortcut */
-"The Meal" = "Måltiden";
+/* Suspend/Resume Shortcut */
+"Pump command" = "Pumpkommando";
+/* Suspend/Resume Shortcut */
+"enacted in iAPS" = "skickat till iAPS";
 
-/* Meal Prestes Shortcut */
-"has been added to iAPS" = "har lagt till i iAPS";
+/* Temp Basal Shortcut */
+"Temp basal Amount in U/h" = "Temporär basaldos i enheter per timme";
+
+/* */
+"Cancel Temp" = "Avbryt temporär basal";
+
+
 
 /* */
 "Schedule " = "Schema ";
@@ -1142,6 +1221,12 @@ Enact a temp Basal or a temp target */
 
 /* */
 "No Glucose Alarm active" = "Inget blodsockerlarm aktivt";
+
+/* */
+"Ascending Glucose Alarm active" = "Stigande blodsockerlarm aktivt";
+
+/* */
+"Descending Glucose Alarm active" = "Fallande blodsockerlarm aktivt";
 
 /* */
 "snoozing until %@" = "snoozar till %@";
@@ -1183,7 +1268,7 @@ Enact a temp Basal or a temp target */
 "Backfill options" = "Alternativ för återfyllnad";
 
 /* */
-"Backfilling from trend is currently not well supported by Loop" = "Återfyllning från trend stöds för närvarande inte bra av Loop";
+"Backfilling from trend is currently not well supported by iAPS" = "Återfyllning från trend stöds för närvarande inte bra av iAPS";
 
 /* */
 "Backfill from history" = "Återfyll från historik";
@@ -1208,6 +1293,57 @@ Enact a temp Basal or a temp target */
 
 /* */
 "Carbs Required Threshold" = "Tröskelvärde för kolhydrater som krävs";
+
+/* */
+"Carbs Required" = "Kolhydrater krävs";
+
+/* */
+"Sounds" = "Ljud";
+
+/* Sound for Hypo alert */
+"Hypoglycemia" = "Lågt blodsocker";
+
+/* Sound for Hyper alert */
+"Hyperglycemia" = "Högt blodsocker";
+
+/* Sound for ascending glucose */
+"Rapidly Ascending" = "Snabbt stigande";
+
+/* Sound for descending glucose */
+"Rapidly Descending" = "Snabbt fallande";
+
+/* Silent sound option */
+"Silent" = "Tyst";
+
+/* Option for no sound */
+"Silent" = "Tyst";
+
+/* Option for default notification sound */
+"Default" = "Standard";
+
+/* The iOS default sound */
+"iOS default sound" = "iOS standardljud";
+
+/* Alert for descending glucose */
+"RAPIDLY DESCENDING GLUCOSE!" = "SNABBT FALLANDE BLODSOCKER!";
+
+/* Alert for ascending glucose */
+"RAPIDLY ASCENDING GLUCOSE!" = "SNABBT STIGANDE BLODSOCKER!";
+
+/* Sound for bolus failure */
+"Bolus Failure" = "Bolus misslyckades";
+
+/* Sound for missing loops */
+"Missing Loops" = "Saknade loopar";
+
+/* Alert for ascending glucose */
+"Ascending" = "Stigande";
+
+/* Alert for descending glucose */
+"Descending" = "Sjunkande";
+
+/* Thresholds for Alerts */
+"Thresholds" = "Tröskelvärden";
 
 /* */
 "Carbs required: %d g" = "Kolhydrater som krävs: %d g";
@@ -1245,7 +1381,612 @@ Enact a temp Basal or a temp target */
 /* Food Type / Meal Note */
 "Note" = "Anteckning";
 
+"Servings" = "Portioner";
+
+"Kilo Calories" = "Kilokalorier";
+
+"Meals" = "Måltider";
+
+"Today's Meals" = "Dagens måltider";
+
+// --------- AI ---------
 /* */
+
+"Ask AI..." = "Fråga AI...";
+
+"Search saved foods..." = "Sök efter sparad mat...";
+
+"Search foods..." = "Söker på webben efter mat...";
+
+"Saved Foods" = "Sparad mat";
+
+"Add Food Manually" = "Lägg till mat manuellt";
+
+"Per Serving" = "Per portion";
+
+"Per 100g" = "Per 100g";
+
+"Per 100ml" = "Per 100ml";
+
+"This portion" = "Denna portion";
+
+"Serving Size" = "Portionsstorlek";
+
+"Standard Serving" = "Standardportion";
+
+"Food Name" = "Matnamn";
+
+"Food" = "Mat";
+
+"Tag name" = "Märkning";
+
+"Add New Tag" = "Lägg till märkning";
+
+"Tags" = "Märkningar";
+
+"Show All Nutrients" = "Visa alla näringsämnen";
+
+"Calories" = "Kalorier";
+
+"Quick access to your frequently used foods" = "Snabb tillgång till din vanliga mat";
+
+"Search databases or describe food for AI analysis" = "Sök i databaser eller beskriv mat för AI-analys";
+
+"Scan packaged foods for nutrition information" = "Skanna förpackad mat för näringsinformation";
+
+"Snap a picture for AI-powered nutrition analysis. Long-press to choose from library." = "Ta en bild för AI-driven näringsanalys. Tryck länge för att välja från ditt bildbibliotek.";
+
+"Enter nutrition information manually" = "Ange näringsinformation manuellt";
+
+"Place a reference object (coin, hand) for scale" = "Placera ett referensobjekt (mynt, hand) för skala";
+
+"Include the full plate or package in frame" = "Inkludera hela tallriken eller paketet inom ramen";
+
+"Use good lighting for best results" = "Använd bra belysning för bästa resultat";
+
+"Photography Tips" = "Fotograferingstips";
+
+"Manual Entry" = "Manuell inmatning";
+
+"Photo Analysis" = "Fotoanalys";
+
+"Barcode Scanner" = "Streckkodsläsare";
+
+"Text Search" = "Textsökning";
+
+"AI Image Analysis" = "AI Livsmedelsanalys";
+
+"Barcode" = "Streckkod";
+
+"AI Model Statistics" = "AI-modellstatistik";
+
+"Slide to Clear All Statistics" = "Dra för att rensa all statistik";
+
+"Avg Time" = "Snitttid";
+
+"Count" = "Antal";
+
+"Statistics will appear here after you use AI models for food analysis." = "Statistik visas här efter att du använder AI-modeller för livsmedelsanalys.";
+
+"No Statistics Yet" = "Ingen statistik ännu";
+
+"Food Search Settings" = "Inställningar för matsökning";
+
+"AI nutritional estimates are approximations only. Always consult with your healthcare provider for medical decisions. Verify nutritional information whenever possible. Use at your own risk." = "AI-näringsberäkningar är endast approximationer. Rådgör alltid med din vårdgivare för medicinska beslut. Verifiera näringsinformation när det är möjligt. Använd på egen risk.";
+
+"Google (Gemini API) → OpenAI (ChatGPT API) → Anthropic (Claude API)" = "Google (Gemini API) → OpenAI (ChatGPT API) → Antropiska (Claude API)";
+
+"**AI Image Analysis:**" = "**AI Livsmedelsanalys:**";
+
+"OpenFoodFacts" = "OpenFoodFacts";
+
+"**Barcode Scanning:**" = "**Skanna streckkod:**";
+
+"USDA FoodData Central → OpenFoodFacts" = "USDA FoodData Central → OpenFoodFacts";
+
+"**Text/Voice Search:**" = "**Text/Ljud-sökning:**";
+
+"Search Type Recommendations" = "Söktyprekommendationer";
+
+"• **USDA FoodData Central**: Free, official nutrition database. Superior nutrition data for non-packaged foods like fruits, vegetables, and meat." = "• **USDA FoodData Central**: Gratis, officiell näringsdatabas. Överlägsen näringsdata för icke-förpackade livsmedel som frukt, grönsaker och kött.";
+
+"**Text/Voice Search:**" = "**Text/Ljud-sökning:**";
+
+"• **OpenFoodFacts**: Free, open database with extensive barcode coverage and text search for packaged foods." = "• **OpenFoodFacts**: Gratis, öppen databas med omfattande streckkodsdata och textsökning för förpackade livsmedel. Standard för text- och streckkodssökningar.";
+
+"AI Progress Animation" = "AI-progessanimering";
+
+"Miscellaneous" = "Diverse";
+
+"AI Usage Statistics" = "AI-användningsstatistik";
+
+"View performance metrics for AI models you've used." = "Visa prestandamätvärden för AI-modeller du använt.";
+
+"Usage Statistics" = "Användningsstatistik";
+
+"Photo library access is required to save images." = "Åtkomst till bildbibliotek krävs för att spara bilder.";
+
+"Enable Photo Library Access" = "Aktivera åtkomst till fotobibliotek";
+
+"Save Photos" = "Spara bilder";
+
+"When enabled, photos taken will be saved into the iAPS album in your photo library." = "När den är aktiverad kommer foton som tas att sparas i iAPS-albumet i ditt fotobibliotek.";
+
+"Photo Library" = "Fotobibliotek";
+
+"Send smaller images to AI" = "Skicka mindre bilder till AI";
+
+"When enabled, images are resized to a smaller resolution before sending to AI. This reduces data usage and speeds up analysis, but the AI will see less detail." = "När den är aktiverad ändras bilder till en mindre upplösning innan de skickas till AI. Detta minskar dataanvändningen och snabbar upp analysen, men AI kommer att se mindre detaljer.";
+
+"Image Processing" = "Bildbehandling";
+
+"Show annotation prompt for images" = "Visa kommentarsfråga för bilder";
+
+"When enabled, you'll be prompted to add optional text descriptions to food images." = "När den är aktiverad uppmanas du att lägga till valfria textbeskrivningar till matbilder.";
+
+"Image Annotations" = "Bildnoteringar";
+
+"Default to AI search" = "Standard för AI-sökning";
+
+"Sets which search method is selected by default when you open the food search view. You can always toggle between AI and database search using the button next to the search field." = "Anger vilken sökmetod som väljs som standard när du öppnar sökvyn. Du kan alltid växla mellan AI och databassökning med hjälp av knappen bredvid sökfältet.";
+
+"Default Text Search Method" = "Standardmetod för textsökning";
+
+"Preferred Region" = "Önskad region";
+
+"Preferred Language" = "Önskat språk";
+
+"Nutrition Authority" = "Näringsmyndighet";
+
+"Choose a specific language and region for AI output." = "Välj ett specifikt språk och region för AI-utdata.";
+
+"Localization" = "Lokalisering";
+
+"Enter your OpenAI API key" = "Ange din OpenAI API-nyckel";
+
+"ChatGPT (OpenAI) API Key" = "ChatGPT (OpenAI) API-nyckel";
+
+"Get an API key at platform.openai.com." = "Skaffa en API-nyckel på platform.openai.com.";
+
+"OpenAI (ChatGPT API) Configuration" = "OpenAI (ChatGPT API) - konfiguration";
+
+"Enter your Google Gemini API key" = "Ange din Google Gemini API-nyckel";
+
+"Google Gemini API Key" = "Google Gemini API-nyckel";
+
+"Get a free API key at ai.google.dev." = "Skaffa en API-nyckel på ai.google.dev.";
+
+"Google (Gemini API) Configuration" = "Google (Gemini API) - konfiguration";
+
+"Get a free API key at ai.google.dev." = "Skaffa en API-nyckel på ai.google.dev.";
+
+"Enter your Claude API key" = "Ange din Claude API-nyckel";
+
+"Claude API Key" = "Claude API-nyckel";
+
+"Get an API key at console.anthropic.com." = "Skaffa en API-nyckel på console.anthropic.com.";
+
+"Anthropic (Claude API) Configuration" = "Antropisk (Claude API) konfiguration";
+
+"Provider for Barcode Scanning" = "Leverantör av streckkodssökning";
+
+"Provider for Text/Voice Search" = "Leverantör av text/ljud-sökning";
+
+"Provider for AI Text Analysis" = "Leverantör för AI-textanalys";
+
+"Fast" = "Snabb";
+
+"Provider for AI Image Analysis" = "Leverantör av AI-bildanalys";
+
+
+"Food Search Provider Configuration" = "Konfiguration av matsökleverantör";
+
+"Barcode Scanner" = "Streckkodsläsare";
+
+"Photography Tips" = "Fotograferingstips";
+
+"Manual Entry" = "Manuell inmatning";
+
+"Manual Entry" = "Manuell inmatning";
+
+"Photo Analysis" = "Fotoanalys";
+
+"Text Search" = "Textsökning";
+
+"Place a reference object (coin, hand) for scale" = "Placera ett referensobjekt (mynt, hand) för skala";
+
+"Include the full plate or package in frame" = "Inkludera hela tallriken eller paketet inom ramen";
+
+"Use good lighting for best results" = "Använd bra belysning för bästa resultat";
+
+"Enter nutrition information manually" = "Ange näringsinformation manuellt";
+
+"Snap a picture for AI-powered nutrition analysis. Long-press to choose from library." = "Ta en bild för AI-driven näringsanalys. Tryck länge för att välja från ditt bildbibliotek.";
+
+"Scan packaged foods for nutrition information" = "Skanna förpackad mat för näringsinformation";
+
+"Search databases or describe food for AI analysis" = "Sök i databaser eller beskriv mat för AI-analys";
+
+"Quick access to your frequently used foods" = "Snabb tillgång till din vanliga mat";
+
+"Food" = "Mat";
+
+"Food Name" = "Matnamn";
+
+"Serving Size" = "Portionsstorlek";
+
+"This portion" = "Denna portion";
+
+"Per 100g" = "Per 100g";
+
+"Per Serving" = "Per portion";
+
+"Add Food Manually" = "Lägg till mat manuellt";
+
+"Saved Foods" = "Sparad mat";
+
+"United States (USDA / FDA)" = "Förenta staterna (USDA / FDA)";
+
+"European Union (EFSA / EU labeling)" = "Europeiska unionen (EFSA / EU-märkning)";
+
+"United Kingdom (CoFID / NHS)" = "Storbritannien (CoFID / NHS)";
+
+"Canada (Health Canada)" = "Kanada (Health Canada)";
+
+"Australia & New Zealand (FSANZ)" = "Australien & Nya Zeeland (FSANZ)";
+
+"Japan (MHLW)" = "Japan (MHLW)";
+
+"International (WHO / FAO / Codex)" = "Internationellt (WHO / FAO / Codex)";
+
+"United States Department of Agriculture (USDA), FDA Nutrition Facts" = "Förenta staternas jordbruksdepartement (USDA), FDA Nutrition Facts";
+
+"European Food Safety Authority (EFSA), EU food labeling standards" = "Europeiska myndigheten för livsmedelssäkerhet (EFSA), EU: s standarder för livsmedelsmärkning";
+
+"UK Composition of Foods Integrated Dataset (CoFID), NHS" = "Storbritanniens sammansättning av livsmedelsintegrerade dataset (CoFID), NHS";
+
+"Health Canada, Canadian Nutrition Facts Table" = "Health Canada, Kanadensisk näringsfaktatabell";
+
+"Food Standards Australia New Zealand (FSANZ)" = "Livsmedelsstandarder Australien Nya Zeeland (FSANZ)";
+
+"Ministry of Health, Labour and Welfare (MHLW), Japanese Food Labeling Standards" = "Ministeriet för hälsa, arbetsliv och välfärd (MHLW), japanska standarder för livsmedelsmärkning";
+
+"World Health Organization (WHO), FAO, Codex Alimentarius" = "Världshälsoorganisationen (WHO), FAO, Codex Alimentarius";
+
+"protein" = "protein";
+
+"carbs" = "kolh.";
+
+"fat" = "fett";
+
+"📝 Notes" = "📝 Anteckningar";
+
+/* */
+"💉 Diabetes recommendations" = "💉 Diabetesrekommendationer";
+
+/* */
+"🍽️ Separate Foods" = "🍽️ Separata livsmedel";
+
+/* */
+"Add all" = "Lägg till alla";
+
+/* */
+"🧠 AI Food analysis" = "🧠 AI Livsmedelsanalys";
+
+/* */
+"📊 Total nutritional values of the meal" = "📊 Totala näringsvärden för måltiden";
+
+/* */
+"Confidence level:" = "Konfidensnivå:";
+
+/* */
+"Notes: %@" = "Anteckningar: %@";
+
+/* */
+"Visual Cues: %@" = "Visuella ledtrådar: %@";
+
+/* */
+"Preparation: %@" = "Beredning: %@";
+
+/* */
+"Preparation" = "Beredning";
+
+/* */
+"Multiplicator" = "Multiplikator";
+
+/* */
+"Accept quantity" = "Godkänn mängd";
+
+/* */
+"Enter desired quantity" = "Ange önskad mängd";
+
+/* */
+"AI Food Search" = "AI matsökning";
+
+/* Title */
+"Food Search" = "Matsökning";
+
+/* Food Search input */
+"Food Search..." = "Matsökning...";
+
+/* */
+"Search Food Database" = "Sök Matdatabas";
+
+"Models Used:" = "Modeller som används:";
+
+"Current Mode: %@" = "Nuvarande läge: %@";
+
+"Analysis Mode" = "Analysläge";
+
+"This AI provider requires an API key. Please enter your API key in the settings below." = "Denna AI-leverantör kräver en API-nyckel. Ange din API-nyckel i inställningarna nedan.";
+"API Key Required" = "API-nyckel krävs";
+
+"Food Search Settings" = "Inställningar för matsökning";
+
+"AI nutritional estimates are approximations only. Always consult with your healthcare provider for medical decisions. Verify nutritional information whenever possible. Use at your own risk." = "AI-näringsberäkningar är endast approximationer. Rådgör alltid med din vårdgivare för medicinska beslut. Verifiera näringsinformation när det är möjligt. Använd på egen risk.";
+
+"Medical Disclaimer" = "Friskrivningsklausul";
+
+"Google (Gemini API) → OpenAI (ChatGPT API) → Anthropic (Claude API)" = "Google (Gemini API) → OpenAI (ChatGPT API) → Antropiska (Claude API)";
+
+"**AI Image Analysis:**" = "**AI Livsmedelsanalys:**";
+
+"OpenFoodFacts" = "OpenFoodFacts";
+
+"**Barcode Scanning:**" = "**Skanna streckkod:**";
+
+"USDA FoodData Central → OpenFoodFacts" = "USDA FoodData Central → OpenFoodFacts";
+
+"**Text/Voice Search:**" = "**Text/Ljud-sökning:**";
+"Search Type Recommendations" = "Söktyprekommendationer";
+
+"• **USDA FoodData Central**: Free, official nutrition database. Superior nutrition data for non-packaged foods like fruits, vegetables, and meat." = "• **USDA FoodData Central**: Gratis, officiell näringsdatabas. Överlägsen näringsdata för icke-förpackade livsmedel som frukt, grönsaker och kött.";
+
+"• **OpenFoodFacts**: Free, open database with extensive barcode coverage and text search for packaged foods." = "• **OpenFoodFacts**: Gratis, öppen databas med omfattande streckkodsdata och textsökning för förpackade livsmedel. Standard för text- och streckkodssökningar.";
+"❌ If you select 'OpenFoodFacts' or 'USDA', camera analysis will use basic estimation instead of AI" = "❌ Om du väljer 'OpenFoodFacts' eller 'USDA', kommer kameraanalys att använda grundläggande uppskattning istället för AI";
+
+"✅ Select 'Anthropic (Claude API)', 'Google (Gemini API)', or 'OpenAI (ChatGPT API)' for AI Image Analysis to use your paid keys" = "✅ Välj 'Anthropic (Claude API)', 'Google (Gemini API)' eller 'OpenAI (ChatGPT API)' för AI bildanalys för att använda dina betalda nycklar";
+
+"When you take a photo of food, the app uses the provider selected in 'AI Image Analysis' above." = "När du tar ett foto av mat, använder appen leverantören som valts i \"AI bildanalys\" ovan.";
+"Break down this meal into individual components with complete macronutrient profiles (carbs, protein, fat, calories) per item and combined totals." = "Bryt ner denna måltid i enskilda komponenter med fullständiga makronäringsprofiler (kolhydrater, protein, fett, kalorier) per objekt och kombinerade summor.";
+
+"Identify all food items in this image with focus on carbohydrate content for diabetes management. Provide detailed carb counts for each component and total meal carbohydrates." = "Identifiera alla livsmedel i denna bild med fokus på kolhydratinnehåll för diabeteshantering. Ge detaljerad kolhydratberäkning för varje komponent och total måltid.";
+
+"Diabetes Focus" = "Diabetesfokus";
+
+"Provide extremely detailed visual analysis of this food image. Describe every element you can see: food colors, textures, cooking methods (grilled marks, browning, steaming), plate type and size, utensils present, garnishes, sauces, cooking oils visible, food arrangement, and background elements. Use these visual details to estimate precise portion sizes and calculate accurate nutrition values for diabetes management." = "Ge extremt detaljerad visuell analys av denna matbild. Beskriv alla element du kan se: matfärger, texturer, matlagningsmetoder (grillade märken, brun, ångande), tallrikstyp och storlek, redskap närvarande, garneringar, såser, matlagning oljor synliga, matarrangemang, och bakgrundselement. Använd dessa visuella detaljer för att uppskatta exakta portionsstorlekar och beräkna exakta näringsvärden för diabeteshantering.";
+
+"Analyze this food image for diabetes management. Describe exactly what you see in detail: colors, textures, cooking methods, plate type, utensils, and food arrangement. Identify each food item with specific preparation details, estimate precise portion sizes using visual references, and provide carbohydrates, protein, fat, and calories for each component. Focus on accurate carbohydrate estimation for insulin dosing." = "Analysera denna matbild för diabeteshantering. Beskriv exakt vad du ser i detalj: färger, texturer, matlagningsmetoder, tallrikstyp, redskap och matarrangemang. Identifiera varje livsmedel objekt med specifika förberedelsedetaljer, uppskatta exakta portionsstorlekar med hjälp av visuella referenser, och ge kolhydrater, protein, fett och kalorier för varje komponent. Fokus på exakt kolhydratberäkning för insulindosering.";
+
+"AI Prompt for Enhanced Results" = "AI-fråga för förbättrade resultat";
+
+"Enter your OpenAI API key" = "Ange din OpenAI API-nyckel";
+
+"ChatGPT (OpenAI) API Key" = "ChatGPT (OpenAI) API-nyckel";
+
+"Get an API key at platform.openai.com." = "Skaffa en API-nyckel på platform.openai.com.";
+
+"OpenAI (ChatGPT API) Configuration" = "OpenAI (ChatGPT API) - konfiguration";
+
+"Macro Tracking" = "Makrospårning";
+
+"Identify all food items in this image with focus on carbohydrate content for diabetes management. Provide detailed carb counts for each component and total meal carbohydrates." = "Identifiera alla livsmedel i denna bild med fokus på kolhydratinnehåll för diabeteshantering. Ge detaljerad kolhydratberäkning för varje komponent och total måltid.";
+
+"Detailed Visual Analysis" = "Detaljerad visuell analys";
+
+"Enter your Google Gemini API key" = "Ange din Google Gemini API-nyckel";
+
+"Google Gemini API Key" = "Google Gemini API-nyckel";
+
+"Get a free API key at ai.google.dev." = "Skaffa en API-nyckel på ai.google.dev.";
+
+"Google (Gemini API) Configuration" = "Google (Gemini API) - konfiguration";
+
+"Your AI provider quota has been exceeded. Please check your usage limits or try a different provider." = "Din AI-leverantörskvot har överskridits. Kontrollera dina användningsgränser eller prova en annan leverantör.";
+
+"Your AI provider has run out of credits. Please check your account billing or try a different provider." = "Din AI-leverantör har slut på krediter. Vänligen kontrollera ditt kontos fakturering eller prova en annan leverantör.";
+
+"Reset to Default" = "Återställ standardvärden";
+
+"Retake Photo" = "Ta om foto";
+
+"Retry Analysis" = "Försök analysera igen";
+
+"Try Different Provider" = "Prova annan leverantör";
+
+"Check Account" = "Kontrollera ditt konto";
+
+"Analysis Error" = "Analysfel";
+
+"AI Food Analysis" = "AI Livsmedelsanalys";
+
+"Use Cancel to retake photo" = "Använd Avbryt för att ta om foto";
+
+"Analyzing food with AI..." = "Analyserar mat med AI...";
+
+"Choose from Library" = "Välj från biblioteket";
+
+"Take a Photo" = "Ta ett foto";
+
+"Keep the camera level to reduce distortion and keep portions proportional." = "Håll kamerans i ett jämnt läge för att minska förvrängningen och hålla portionerna proportionella.";
+
+"Shoot from slightly above" = "Fotografera något från ovan";
+
+"Forks, cups, or hands help AI calculate realistic portions." = "Gafflar, koppar, eller händer hjälper AI beräkna realistiska delar.";
+
+"Add a size reference" = "Lägg till en storleksreferens";
+
+"Make sure every food item is in the frame." = "Se till att alla livsmedel ryms inom ramen.";
+
+"Frame the full meal" = "Rama in hela måltiden";
+
+"Remove napkins, lids, or packaging that may be misidentified as food." = "Ta bort servetter, lock eller förpackningar som kan bli felaktigt identifierade som livsmedel.";
+
+"Clear the area" = "Rensa området";
+
+"Harsh shadows confuse the AI and dim light can hide textures." = "Hårda skuggor förvirrar AI och svagt ljus kan dölja texturer.";
+
+"Use bright, even light" = "Använd ljust, jämnt ljus";
+
+"Better photos = better estimates" = "Bättre foton = bättre beräkningar";
+
+"Scan failed" = "Skanning misslyckades";
+
+"Looking up product..." = "Söker efter produkt...";
+
+"Code detected!" = "Koden upptäckt!";
+
+"Position camera over barcode or QR code" = "Placera kameran över streckkod eller QR-kod";
+
+"Validating format..." = "Validerar format...";
+
+"Scanning for barcode or QR code..." = "Skannar efter streckkod eller QR-kod...";
+
+"Initializing camera..." = "Initierar kamera...";
+
+"Scan failed" = "Skanning misslyckades";
+
+"iAPS needs camera access to scan barcodes. Please enable camera access in Settings." = "iAPS behöver kameraåtkomst för att skanna streckkoder. Aktivera kameraåtkomst i Inställningar.";
+
+"Camera Access Required" = "Åtkomst till kamera krävs";
+
+"Check Permissions" = "Kontrollera behörigheter";
+
+"Supports traditional barcodes and QR codes" = "Stöder traditionella streckkoder och QR-koder";
+
+"Hold steady for best results" = "Håll stadigt för bästa resultat";
+
+"Retry" = "Försök igen";
+
+"Scan Barcode" = "Skanna streckkod";
+
+"📦 Database Results" = "📦 Databasresultat";
+
+"🤖 AI Search Results" = "🤖 AI sökresultat";
+
+"• Use the barcode scanner for packaged foods" = "• Använd streckkodsläsaren för förpackade livsmedel";
+
+"• Check spelling carefully" = "• Kontrollera stavningen noggrant";
+
+"• Use simple, common food names" = "• Använd enkla, vanliga livsmedelsnamn";
+
+"• Try brand names (e.g., \"Cheerios\")" = "• Prova märkesnamn (t.ex. \"Cheerios\")";
+
+"💡 Search Tips:" = "💡 Söktips:";
+
+"Try simpler terms like \"bread\" or \"apple\", or scan a barcode" = "Prova enklare termer som \"bröd\" eller \"äpple\", eller skanna en streckkod";
+
+"Check your spelling and try again" = "Kontrollera din stavning och försök igen";
+
+"No Foods Found" = "Inga livsmedel hittades";
+
+"Search Error" = "Sökfel";
+
+"Finding the best matches for you" = "Hitta de bästa matchningarna för dig";
+
+"Searching foods" = "Söker mat";
+
+"AI Analysis" = "AI-analys";
+
+"Analysis Status" = "Analysstatus";
+
+"❌ Analysis failed" = "❌ Analys misslyckades";
+
+"⚠️ Connection interrupted..." = "⚠️ Anslutning avbröts...";
+
+"✅ Analysis complete!" = "✅ Analys slutförd!";
+
+"🍽️ Generating nutrition summary..." = "🍽️ Skapar näringssammanfattning...";
+
+"📊 Processing analysis results..." = "📊 Bearbetar analysresultat...";
+
+"🤖 Running AI vision analysis..." = "🤖 Kör AI vision - analys...";
+
+"⚖️ Comparing to USDA standards..." = "⚖️ Jämfört med USDA standarder...";
+
+"📏 Calculating serving sizes..." = "📏 Beräknar serveringsstorlekar...";
+
+"🔬 Identifying food portions..." = "🔬 Identifierar matportioner...";
+
+"📊 Analyzing nutritional content..." = "📊 Analyserar näringsinnehållet...";
+
+"📡 Uploading image for analysis..." = "📡 Laddar upp bild för analys...";
+
+"🧠 Connecting to AI provider..." = "🧠 Ansluter till AI-leverantör...";
+
+"💼 Optimizing image quality..." = "💼 Optimerar bildkvaliteten...";
+
+"📱 Processing image data..." = "📱 Bearbetar bilddata...";
+
+"🔍 Initializing AI food analysis..." = "🔍 Initierar AI - matanalys...";
+
+"⚡ Processing AI analysis results..." = "⚡ Bearbetar AI-analysresultat...";
+
+"📥 Received response from Claude..." = "📥 Mottaget svar från Claude...";
+
+"⏳ AI is cooking up results..." = "⏳ AI kokar ihop resultat...";
+
+"🌐 Sending request to Claude..." = "🌐 Skickar begäran till Claude...";
+
+"📡 Preparing API request..." = "📡 Förbereder API-begäran...";
+
+"🔄 Encoding image data..." = "🔄 Bearbetar bilddata...";
+
+"🖼️ Optimizing your image..." = "🖼️ Optimerar din bild...";
+
+"⚙️ Configuring Claude parameters..." = "⚙️ Konfigurerar Claude-parametrar...";
+
+"⚙️ Processing analysis results..." = "⚙️ Bearbetar analysresultat...";
+
+"📊 Calculating nutrition estimates..." = "📊 Beräkna näringsestimeringar...";
+
+"🍽️ Identifying food characteristics..." = "🍽️ Identifierar livsmedelsegenskaper...";
+
+"📱 Analyzing image properties..." = "📱 Analyserar bildegenskaper...";
+
+"📊 Initializing basic analysis..." = "📊 Initierar grundläggande analys...";
+
+"🤖 Connecting to Google Gemini..." = "🤖 Ansluter till Google Gemini...";
+
+"📥 Received response from Gemini..." = "📥 Mottaget svar från Gemini...";
+
+"🌐 Sending request to Google Gemini..." = "🌐 Skickar begäran till Google Gemini...";
+
+"🔄 Encoding image data..." = "🔄 Bearbetar bilddata...";
+
+"⚙️ Configuring Gemini parameters..." = "⚙️ Konfigurerar Gemini-parametrar...";
+
+"📥 Received response from OpenAI..." = "📥 Mottaget svar från OpenAI...";
+
+"💾 Caching analysis result..." = "💾 Sparar analysresultat...";
+
+"⏳ Doing a deep analysis (may take a bit)..." = "⏳ Gör en djupanalys (kan ta en stund)...";
+
+"🎯 Selecting optimal AI provider..." = "🎯 Väljer optimal AI-leverantör...";
+
+"⚡ Starting parallel provider analysis..." = "⚡ Startar parallell leverantörsanalys...";
+
+"Amount:" = "Mängd:";
+
+"Take Over" = "För över";
+
+"kcal" = "kcal";
+
+"Cal" = "Kal";
+
+"servings" = "portioner";
+
+"serving" = "portion";
+
+"Reset to " = "Återställ till ";
+
+"Apply" = "Använd";
+
+"Carbs" = "Kolhydrater";
+
+// --------- End of AI ---------
+/* */
+
 "Temp Basal" = "Temporär basal";
 
 /* */
@@ -1321,7 +2062,10 @@ Enact a temp Basal or a temp target */
 "Developer" = "Utvecklare";
 
 /* Debug option view NS Upload Profile */
-"NS Upload Profile" = "Ladda upp profil till NS";
+"NS Upload Profile and Settings" = "NS Ladda upp profil och inställningar";
+
+/* Debug option delete all NS overrides */
+"Delete All NS Overrides" = "Ta bort alla NS-undantag";
 
 /* Debug option view NS Uploaded Profile */
 "NS Uploaded Profile" = "Uppladdad profil";
@@ -1344,8 +2088,11 @@ Enact a temp Basal or a temp target */
 /* Debug option view Pump History */
 "Pump History" = "Pumphistorik";
 
+/* Debug option view Temp Basals */
+"Temp Basals" = "Temporära basaler";
+
 /* Debug option view Target Ranges */
-"Target ranges" = "Målvärden";
+"Targets ranges" = "Målvärden";
 
 /* Debug option view Temp targets */
 "Temp targets" = "Tillfälliga målvärden";
@@ -1368,6 +2115,9 @@ Enact a temp Basal or a temp target */
 /* Debug option view Enacted announcements announcements (from NS) */
 "Enacted announcements" = "Överförda meddelanden";
 
+/* Debug option view Not Uploaded Overrides */
+"Overrides Not Uploaded" = "Undantag ej uppladdade";
+
 /* Debug option view Autotune */
 "Autotune" = "Autotune";
 
@@ -1388,10 +2138,10 @@ Enact a temp Basal or a temp target */
 "Connect to Apple Health" = "Anslut till Apple Hälsa";
 
 /* Show when have not permissions for writing to Health */
-"For write data to Apple Health you must give permissions in Settings > Health > Data Access" = "För att kunna skriva data till Apple Hälsa måste du först ge din tillåtelse i Inställningar > Hälsa > Datatillgång och enheter";
+"To allow iAPS to write data to Apple Health, you must grant permission in Settings > Health > Data Access." = "För att kunna skriva data till Apple Hälsa måste du först ge din tillåtelse i Inställningar > Hälsa > Datatillgång och enheter";
 
 /* */
-"This allows iAPS to read from and write to Apple Heath. You must also give permissions in Settings > Health > Data Access. If you enter a glucose value into Apple Health, open iAPS to confirm it shows up." = "Tillåt iAPS att använda databasen Apple Hälsa. För att se och ändra tillåtelser öppna 'Inställningar/Hälsa/Datatillgång och enheter' på din iPhone.";
+"This allows iAPS to read from and write to Apple Heath. You must also give permissions in Settings > Health > Data Access." = "Tillåt iAPS att använda databasen Apple Hälsa. För att se och ändra tillåtelser öppna 'Inställningar/Hälsa/Datatillgång och enheter' på din iPhone.";
 
 /* New ALerts ------------------------- */
 /* Info title */
@@ -1419,7 +2169,7 @@ Enact a temp Basal or a temp target */
 " -  Manual Basal ⚠️" = " -  Manuell basal ⚠️";
 
 /* Total AT / Scheduled basal insulin */
-" U/day" = " IE/dag";
+"U/day" = "IE/dag";
 
 /* Total AT / Scheduled basal insulin */
 "Total" = "Totalt";
@@ -1468,6 +2218,9 @@ Enact a temp Basal or a temp target */
 /* Service Section */
 "Fat And Protein Conversion" = "Fett och protein";
 
+/* Ignore flat CGM readings */
+"Ignore flat CGM readings" = "Ignorera varningar för oförändrade sensorvärden";
+
 /* Service Section */
 "Profile Override" = "Undantag från dina sparade profiler";
 
@@ -1497,6 +2250,21 @@ Enact a temp Basal or a temp target */
 /* */
 "Disable SMBs" = "Stäng av autobolusar (SMBs)";
 
+/* */
+"End the Override with next Meal" = "Avsluta profilen med nästa måltid";
+
+/* */
+"End the Override when Glucose is Trending Up" = "Avsluta profilen när blodsockret trendar uppåt";
+
+/* */
+"And when Glucose is higher than" = "Och när blodsockret är högre än";
+
+/* */
+"End the Override when Glucose is Lower ..." = "Avsluta profilen när blodsockret är lägre ...";
+
+/* */
+"... than" = "... än";
+
 /* Your normal Profile. Use a short string */
 "Normal Profile" = "Normal Profil";
 
@@ -1505,6 +2273,9 @@ Enact a temp Basal or a temp target */
 
 /* */
 "Profiles" = "Profiler";
+
+/* */
+"Advanced Settings" = "Avancerade inställningar";
 
 /* */
 "More options" = "Fler alternativ";
@@ -1522,10 +2293,16 @@ Enact a temp Basal or a temp target */
 "Change CR" = "Ändra CR";
 
 /* */
+"Change Basal" = "Ändra basal";
+
+/* */
 "SMB Minutes" = "SMB-minuter";
 
 /* */
 "UAM SMB Minutes" = "UAM-SMB-minuter";
+
+/* */
+"Override Max IOB" = "Åsidosätt max IOB";
 
 /* */
 "Start new Profile" = "Starta ny profil";
@@ -1641,6 +2418,9 @@ Enact a temp Basal or a temp target */
 "Eventual Glucose" = "Blodsockerprognos";
 
 /* */
+"Minimum Predicted Glucose" = "Lägsta beräknade blodsocker";
+
+/* */
 "Please wait" = "Vänta...";
 
 /* */
@@ -1693,6 +2473,12 @@ Enact a temp Basal or a temp target */
 
 /* Add insulin without bolusing alert */
 " without bolusing" = " utan att ge insulin";
+
+/* */
+"Don't Use 15 min Trend" = "Använd inte 15 min - trend";
+
+/* */
+"Don't adjust for past 15 minutes glucose trend." = "Justera inte för de senaste 15 minuternas glukostrend.";
 
 /* -------------------------------------------------------------------------------------------
   DASH strings
@@ -1777,7 +2563,7 @@ Enact a temp Basal or a temp target */
 "%1$@ for %2$@" = "%1$@ i %2$@";
 
 /* Description text on manual temp basal action sheet */
-"Loop will not automatically adjust your insulin delivery until the temporary basal rate finishes or is canceled." = "iAPS kommer inte automatiskt att justera dina insulindoser förrän den temporära basalen är färdig eller har avbrytits.";
+"iAPS will not automatically adjust your insulin delivery until the temporary basal rate finishes or is canceled." = "iAPS kommer inte automatiskt att justera dina insulindoser förrän den temporära basalen är färdig eller har avbrytits.";
 /* Button text for setting manual temporary basal rate*/
 "Set Temporary Basal" = "Ställ in temporaär basal";
 
@@ -1870,13 +2656,13 @@ Enact a temp Basal or a temp target */
 "Change HbA1c Unit" = "Byt HbA1c-enhet";
 
 /* */
-"Display Chart X - Grid lines" = "Visa linjer för X i diagram";
+"Vertical grid lines" = "Vertikala hjälplinjer";
 
 /* */
-"Display Chart Y - Grid lines" = "Visa linjer för Y i diagram";
+"Horizontal grid lines" = "Horisontella hjälplinjer";
 
 /* */
-"Display Chart Threshold lines for Low and High" = "Visa linjer för lågt och högt i diagram";
+"Threshold lines (Low / High)" = "Tröskellinjer (Lågt/Högt blodsocker)";
 
 /* */
 "Standing / Laying TIR Chart" = "Stående / Liggande TIR-diagram";
@@ -1888,10 +2674,16 @@ Enact a temp Basal or a temp target */
 "2 hours" = "2 timmar";
 
 /* */
+"3 hours" = "3 timmar";
+
+/* */
 "4 hours" = "4 timmar";
 
 /* */
 "6 hours" = "6 timmar";
+
+/* */
+"9 hours" = "9 timmar";
 
 /* */
 "12 hours" = "12 timmar";
@@ -2004,8 +2796,8 @@ Enact a temp Basal or a temp target */
 /* HbA1c for all glucose storage days */
 "all" = "alla";
 
-/* Active Insulin View */
-"Active Insulin" = "Aktivt insulin";
+/* IOB View */
+"Insulin on Board" = "Insulin ombord";
 
 /* Active Insulin View */
 "Time with negative insulin" = "Tid med negativt insulin";
@@ -2028,8 +2820,14 @@ Enact a temp Basal or a temp target */
 /* Active Insulin View */
 "TDD 3 days ago" = "TDD för 3 dagar sedan";
 
-/* Active Carbohydrates View */
-"Active Carbohydrates" = "Aktiva kolhydrater";
+/* COB View */
+"Carbohydrates on Board" = "Kolhydrater ombord";
+
+/* UI/UX-setting */
+"Display COB Chart" = "Visa COB-diagram";
+
+/* UI/UX-setting */
+"Display Insulin Activity Chart" = "Visa diagram för insulinaktivitet";
 
 /* --------------------------------------------------------  Dexcom G7 --------------------------------------*/
 
@@ -2056,7 +2854,7 @@ Enact a temp Basal or a temp target */
 "Share and Backup" = "Dela och säkerhetskopiera";
 
 /* Section 1 title */
-"Upload settings and statistics" = "Ladda upp inställningar och statistik";
+"Upload Settings and Statistics" = "Ladda upp inställningar och statistik";
 
 /* On-off toggle */
 "Share and Backup all of your Settings and Statistics" = "Dela och säkerhetskopiera alla dina inställningar och statistik";
@@ -2080,7 +2878,7 @@ Enact a temp Basal or a temp target */
 "Birth Date" = "Födelsedatum";
 
 /* Share and Backup info text */
-"\nIf you enable \"Share and Backup\" daily backups of your settings and statistics will be made to online database.\n\nMake sure to copy and save your recovery token below. The recovery token is required to import your settings to another phone when using the onboarding view." = "\nOm du aktiverar \"Dela och säkerhetskopiera\" kommer dagliga säkerhetskopior av dina inställningar och statistik att göras till en moln-databas.\n\nSe till att kopiera och spara din återställningstoken nedan. Den kommer att behövas om du någon gång behöver importera dina inställningar till en annan telefon.";
+"\nIf you enable \"Share and Backup\" daily backups of your settings and statistics will be made to online database." = "\nOm du aktiverar \"Dela och säkerhetskopiera\" kommer dagliga säkerhetskopior av dina inställningar och statistik att göras till en online databas.";
 
 /* Section title if sharing off */
 "Share Bare Minimum" = "Dela endast ett minimum";
@@ -2089,7 +2887,7 @@ Enact a temp Basal or a temp target */
 "Just iAPS version number" = "Endast appversion";
 
 /* Share info text */
-"Every bit of information you choose to share is uploaded anonymously. To prevent duplicate uploads, the data is identified with a unique random string saved on your phone, the recovery token." = "All information du väljer att dela laddas upp anonymt. För att förhindra dubbletter av uppladdningar identifieras datan med en unik slumpmässig sträng som sparas på din telefon.";
+"Every bit of information you choose to share is uploaded anonymously. To prevent duplicate uploads, the data is identified with a unique random string saved on your phone - the recovery token." = "All information du väljer att dela laddas upp anonymt. För att förhindra dubbletter av uppladdningar identifieras datan med en unik slumpmässig sträng, din återställningsnyckel, som sparas på din telefon.";
 
 /* Token section title */
 "Your recovery token" = "Din återställningsnyckel";
@@ -2109,8 +2907,11 @@ Enact a temp Basal or a temp target */
 /* */
 "Share your data anonymously" = "Dela data anonymt";
 
-/* Setting Title */
-"Sharing" = "Delning";
+/* */
+"Upload Daily Log" = "Ladda upp dagliga loggar";
+
+/* */
+"When enabled, the previous day's log file is automatically uploaded after midnight. Logs are used only to provide the multi-day analysis feature on open-iaps.app. Off by default." = "När den är aktiverad laddas föregående dags loggfil upp automatiskt efter midnatt. Loggar används bla. för att ge en flerdagarsanalys på open-iaps.app. Av som standard.";
 
 /* ——————————Contact Image ————————*/
 /* Contact Image, contacts list - prefix before the contact given name */
@@ -2220,7 +3021,7 @@ Enact a temp Basal or a temp target */
 "WideFontTracking" = "Bred";
 
 /* Contact Image, settings, light font weight */
-"LightFontWeight" = "Lätt";
+"LightFontWeight" = "Ljus";
 
 /* Contact Image, settings, regular font weight */
 "RegularFontWeight" = "Reguljär";
@@ -2264,10 +3065,27 @@ Enact a temp Basal or a temp target */
 /* Contact Image, settings, loop status (data to display) */
 "LoopStatusContactValue" = "Loopstatus";
 
+/* --------------------------  Dana Pump  ---------------------- */
+/* Dana footer */
+
+"Dana pump does not allow editing of max basal and max bolus. Configure these in the doctor's settings of the pump. Saving the settings will fetch the lastest values from the pump" = "Dana-pumpen tillåter inte ändring av max basal och max bolus i iAPS. Ändra istället dessa inställningar på pumpen. När du klickar på spara kommer de senaste inställningarna att hämtas från pumpen";
+
 /* --------- Auto ISF --------- */
 /* */
 
 "Dynamic ISF is disabled while Auto ISF is enabled" = "Dynamisk insulinkänslighet är inaktiverad medan Auto ISF är aktiverad";
+
+/* */
+"Nighttime" = "På natten";
+
+/* */
+"Disables Auto ISF during nighttime, or any other period selected." = "Inaktiverar automatisk ISF under nattetid, eller någon annan vald period.";
+
+/* */
+"To" = "Till";
+
+/* */
+"From" = "Från";
 
 /* */
 "Default value: 1.2 The upper limit of ISF adjustment" = "Standardvärde: 1,2. Den övre gränsen för automatisk justering av din insulinkänslighet";
@@ -2343,19 +3161,19 @@ Enact a temp Basal or a temp target */
 "Upper Delta limit" = "Övre gräns för blodsockerdelta";
 
 /* */
-"SMBs will be diabled when under this limit, while a B30 Basal rate is running. Default is 8 mg/dl (0.5 mmol/l)." = "Automatiska bolusar (SMBs) kommer att stängas av när ditt negativa blodsockerdelta är under denna inställning, under tiden en B30-basaldos körs. Standardvärde är 0,5 mmol/l.";
+"SMBs will be disabled when under this limit, while a B30 Basal rate is running. Default is 8 mg/dl (0.5 mmol/l)." = "Automatiska bolusar (SMBs) kommer att stängas av när ditt negativa blodsockerdelta är under denna inställning, under tiden en B30-basaldos körs. Standardvärde är 0,5 mmol/l.";
 
 /* */
 "Upper BG limit" = "Övre blodsockergräns";
 
 /* */
-"SMBs will be diabled when under this limit, while a B30 Basal rate is running. Default is 130 mg/dl (7.2 mmol/l)." = "Automatiska bolusar (SMBs) kommer att stängas av när ditt blodsocker är under denna inställning, under tiden en B30-basaldos körs. Standardvärde är 7,2 mmol/l.";
+"SMBs will be disabled when under this limit, while a B30 Basal rate is running. Default is 130 mg/dl (7.2 mmol/l)." = "Automatiska bolusar (SMBs) kommer att stängas av när ditt blodsocker är under denna inställning, under tiden en B30-basaldos körs. Standardvärde är 7,2 mmol/l.";
 
 /* */
 "Target Level for B30 to be enacted" = "Målvärde för blodsocker för att aktivera B30";
 
 /* */
-"An EatingSoon Override Target (or a Temporary Target) needs to be activated to start the B30 adaption. Target needs to be below or equal this  setting for B30 to start. Default is 90 mg/dl. If you cancel this EatingSoon Target, the B30 basal rate will stop." = "En profil eller ett tillfälligt målvärde behöver vara aktiv för att aktivera en B30-basaldos.  Blodsockermålvärdet måste vara under eller lika med denna inställning för att B30 ska kunna starta. Standardvärde är 5 mmol/l. Om du avbryter din profil eller tillfälliga målvärde kommer B30-basalen att avbrytas.";
+"An EatingSoon Override Target (or a Temporary Target) needs to be activated to start the B30 adaption. Target needs to be below this setting for B30 to start. Default is 90 mg/dl. If you cancel this EatingSoon Target, the B30 basal rate will stop." = "En profil eller ett tillfälligt målvärde behöver vara aktiv för att aktivera en B30-basaldos. Blodsockermålvärdet måste vara under denna inställning för att B30 ska startas. Standardvärde är 5 mmol/l. Om du avbryter din profil eller tillfälliga målvärde kommer också B30-basalen att avbrytas.";
 
 /* */
 "Minimum Start Bolus size" = "Minsta manuella bolus för att starta";
@@ -2400,27 +3218,27 @@ Enact a temp Basal or a temp target */
 "Default value: 0.0 This is the weight applied to the polygon which adapts ISF higher deltas. With 0.0 the effect is effectively disabled." = "Standardvärde: 0,0. Detta är den vikt som tillämpas på polygonen som justerar din insulinkänslighet vid högt blodsockerdelta (delta innebär här positiv differens från mälvärde). Vid 0,0 är denna justering inaktiverad.";
 
 /* */
-"ISF weight for lower BG's" = "Justering för låga blodsocker";
+"ISF weight for lower BG" = "Justering för låga blodsocker";
 
 /* */
 "Default value: 0.0 This is the weight applied to the polygon which adapts ISF if glucose is below target. With 0.0 the effect is effectively disabled." = "Standardvärde: 0,0. Detta är den vikt som tillämpas på polygonen som justerar din insulinkänslighet vid låga blodsocker. Vid 0,0 är denna justering inaktiverad.";
 
 /* */
-"ISF weight for higher BG's" = "Justering för höga blodsocker";
+"ISF weight for higher BG" = "Justering för höga blodsocker";
 
 /* */
 "Default value: 0.0 This is the weight applied to the polygon which adapts ISF if glucose is above target. With 0.0 the effect is effectively disabled." = "Standardvärde: 0,0. Detta är den vikt som tillämpas på polygonen som justerar din insulinkänslighet vid höga blodsocker. Vid 0,0 är denna justering inaktiverad.";
 
 /* */
-"Dura ISF Hourly Max Change" = "Maxjustering av insulinkänslighet per timme";
+"Duration Weight" = "Justering för långvarigt högt blodsocker";
 
 /* */
-"Rate at which ISF is reduced per hour assuming BG level remains at double target for that time. When value = 1.0, ISF is reduced to 50% after 1 hour of BG level at 2x target." = "Hastigheten med vilken din insulinkänslighet reduceras per timme förutsatt att blodsockernivån förblir dubbelt så hög som ditt målvärde vid tidpunkten. När värdet är 1,0 kommer insulinkänsligheten att reduceras till 50% efter 1 timme av blodsocker över dubbla målvärdet.";
+"Weight for a prolonged high glucose. For every hour the glucose stays high this adjustment will lower your ISF more.\n\nThe formula for Dura ISF adjustment is:\n\nDura ISF = 1 + hours above target * weight / target * (average glucose - target glucose)" = "Den vikt som tillämpas på ett långvarigt högt blodsocker. För varje timme som ditt blodsocker är för högt kommer din insulinkänslighet att justeras nedåt. \n\nFormeln för justering är:\n\nJustering = 1 + timmar över målvärde * vikt / målvärde * (genomsnittligt blodsocker - målvärde)";
 
 /* */
 "SMB Delivery Ratio BG Range" = "Blodsockerintervall för SMB-kvot";
 
-/* */
+/* SMB Delivery Ratio BG Range description */
 "Default value: 0, Sensible is between 40 mg/dL and 120 mg/dL. The linearly increasing SMB delivery ratio is mapped to the glucose range [target_bg, target_bg+bg_range]. At target_bg the SMB ratio is smb_delivery_ratio_min, at target_bg+bg_range it is smb_delivery_ratio_max. With 0 the linearly increasing SMB ratio is disabled and the fix smb_delivery_ratio is used." = "Standardvärde: 0. Rimlig inställning är mellan 2 och 6 mmol/l. Den linjärt ökande SMB-kvoten beror på blodsockerintervallinställningen och min/max-inställning för din SMB-kvot.";
 
 /* */
@@ -2457,7 +3275,16 @@ Enact a temp Basal or a temp target */
 "Enables the BG acceleration adaptions, adjusting ISF for accelerating/decelerating blood glucose." = "Aktivera blodsockeraccelerationsjusteringar. Justerar ISF vid ett accelererande / decelererande blodsocker.";
 
 /* */
+"Override Auto ISF" = "Ändra Auto ISF";
+
+/* */
 "Enable Auto ISF" = "Aktivera Auto ISF";
+
+/* */
+"Enable Auto CR" = "Aktivera Auto CR";
+
+/* */
+"Highly Experimental!\n\nAdjusts your profile Carb Ratio each loop by the same amount as your profile ISF using autoISF settings.\n\nUse the bolus calculator with great care, this may cause dose recommendations to be too strong.\n\nAutoCR + autoISF can stack. Reduce autoISF aggressiveness first (e.g., lower max/weights), then enable AutoCR and monitor closely." = "Mycket experimentellt!\n\nJusterar din insulinkvot varje loop med samma belopp som din insulinkänslighet justeras med hjälp av autoISF-inställningarna.\n\nAnvänd boluskalkylatorn med stor omsorg, då detta kan orsaka dosrekommendationer som är för starka.\n\nAutoCR + autoISF justerings kan överlappas. Minska autoISF aggressivitet först (t.ex. lägre max/vikt), aktivera sedan AutoCR och övervaka noga.";
 
 /* */
 "Enables Auto ISF. This will disable any eventual dynamic ISF/CR setting" = "Aktiverar automatisk ISF (insulinkänslighet). Detta kommer att inaktivera eventuella samtidiga dynamiska ISF/CR inställningar";
@@ -2468,8 +3295,29 @@ Enact a temp Basal or a temp target */
 /* */
 "Max IOB Threshold Percent" = "Procent av Max IOB som tröskelvärde för SMB";
 
+/* IOB Threshold Percent Description */
+"Percentage of the max IOB setting to use for SMBs while Auto ISF is enabled.\n\nWhile current IOB is below the threshold, the SMB amount can exceed the threshold by 30%, however never the max IOB setting.\n\nAt 100% this setting is disabled." = "Begränsa dina SMB (automatiska bolusar) med en procent av fin inställning för maximalt tillåten mängd aktivt insulin (Max IOB). Kommer endast att användas medan Auto ISF är aktivt.\n\nMedan nuvarande aktivt insulin (IOB) ligger under tröskelvärdet, kan SMB-beloppet överskrida detta tröskelvärde med 30%, men kan aldrig överskrida din inställning för maximalt tillåteb mängd aktivt insulin.\n\nPå 100% kommer denna inställning ar inaktiveras.";
+
 /* */
 "Auto ISF" = "Auto ISF";
+
+/* Is true */
+" on" = " på";
+
+/* Is false */
+" off" = " av";
+
+/* Override adjustment of ISF, CR and Basal */
+"Adjust " = "Justera ";
+
+/* History of the adjustments */
+"Final Ratio" = "Kvot";
+
+/* History of the adjustments */
+"Adjustments" = "Justeringar";
+
+/* History of the adjustments */
+"Insulin" = "Insulin";
 
 /* ---------------------------------------------------------------------------------------------------------------
   Infotexts from openaps.docs and androidaps.docs
@@ -2657,7 +3505,7 @@ Enact a temp Basal or a temp target */
 "Remaining Carbs Cap" = "Max mängd absorption av kolhydrater";
 
 /* "Remaining Carbs Cap" */
-"This is the amount of the maximum number of carbs we’ll assume will absorb over 4h if we don’t yet see carb absorption." = "Mängd av maximala antal kolhydrater som vi antar kommer att absorberas över 4h om vi ännu inte ser 'carb absorption'.";
+"This is the amount of the maximum number of carbs we’ll assume will absorb over 4h if we don’t yet see carb absorption. Maximum 90" = "Mängd av maximala antal kolhydrater som vi antar kommer att absorberas över 4h om vi ännu inte ser någon absorption. Maxvärde 90";
 
 /* Headline ”Max SMB Basal Minutes" */
 "Max SMB Basal Minutes" = "Basalminuter för automatiska bolusar (SMB)";
@@ -2760,14 +3608,8 @@ Enact a temp Basal or a temp target */
 /* Dynamic ISF Setting Title */
 "Minimum Threshold Setting" = "Tröskelvärde";
 
-/* Minimum Threshold Setting, Part 1 */
-"This setting lets you choose a level below which no insulin will be given.\n\nThe threshold is using the largest amount of your threshold setting and the computed threshold:\n\nTarget Glucose - (Target Glucose - 40) / 2\n, here using mg/dl as glucose unit.\n\nFor example, if your Target Glucose is " = "När blodsocker är under denna inställning kommer inget insulin att ges.\n\nTröskelvärdet som kommer att användas kommer vara det största värdet av din inställning och det beräknade värdet:\n\nMålvärde - (Målvärde - 40) / 2\n, här med mg/dl som glukosenhet.\n\nTill exempel, om ditt målvärde är ";
-
-/* Minimum Threshold Setting, Part 2 */
-"the threshold will be " = "kommer tröskelvärdet att vara ";
-
-/* Minimum Threshold Setting, Part 3 */
-"unless your threshold setting is set higher:" = "såvida inte din tröskelvärdesinställning är högre:";
+/* Minimum Threshold Setting */
+"This setting lets you choose a glucose target limit below which no SMB insulin or extra temporary basal insulin will ever be given. Extra temporary basal insulin is the insulin exceeding the insulin required for the basal metabolism.\n\nThe actual glucose threshold used in OpenAPS algoritm will always be the bigger amount of this setting and the computed value:\n\nTarget Glucose - (Target Glucose - 40) / 2." = "Med denna inställning kan du välja ett blodsocker under vilken inget SMB-insulin eller extra basalinsulin någonsin kommer att ges. Extra basalinsulin är det insulin som överskrider det insulin som krävs för basalmetabolismen.\n\nDen faktiska glukoströskeln som används i OpenAPS algoritm kommer alltid att vara den större mängden av denna inställning och det beräknade värdet:\n\nTarget Glukos - (Target Glucose - 40) / 2.";
 
 /* Threshold Table Columns Title */
 "Setting" = "Inställning";
@@ -2797,6 +3639,18 @@ Enact a temp Basal or a temp target */
 "Use alternate Bolus Calculator" = "Använd alternativ boluskalkylator";
 
 /* Bolus Calculator Setting */
+"Use Bolus Calculator" = "Använd boluskalkylator";
+
+/* Bolus Calculator Setting */
+"Depending on your settings the Swift bolus calculator is using data from the OpenAPS glucose predictions and/or from IOB, COB, glucose trend, current gluccose and target glucose. At the end of the calculation a custom factor is applied (default 0.8).\n\nYou can also have the option in your bolus calculator to apply another (!) customizable factor at the end of the calculation which could be useful for fatty meals, e.g Pizza (default 0.7).\n\nThe bolus calculator is NOT using the OpenAPS variable \"insulinRequired\", made for SMBs." = "Beroende på dina inställningar använder Swift-boluskalkylatorn data från OpenAPS glukosprognoser och/eller IOB, COB, glukostrend, nuvarande glukos och målglukos. I slutet av beräkningen tillämpas en anpassad faktor (standard 0,8).\n\nDu kan också ha alternativet i din boluskalkylator för att använda en annan (!) anpassningsbar faktor i slutet av beräkningen som kan vara användbar för fettmåltider, e. Pizza (standard 0,7).\n\nBoluskalkylatorn använder INTE OpenAPS-variabeln \"insulinRequired\".";
+
+/* Bolus Calculator Setting */
+"Adjustment" = "Justering";
+
+/* Bolus Calculator Setting */
+"Use OpenAPS glucose predictions" = "Använd OpenAPS-glukosprognoser";
+
+/* Bolus Calculator Setting */
 "Fatty Meals" = "Fet måltid";
 
 /* Bolus Calculator Setting */
@@ -2805,8 +3659,14 @@ Enact a temp Basal or a temp target */
 /* Bolus Calculator Footer */
 "The new alternate bolus calculator is another approach to the default bolus calculator in iAPS. If the toggle is on you use this bolus calculator and not the original iAPS calculator. At the end of the calculation a custom factor is applied as it is supposed to be when using smbs (default 0.8).\n\nYou can also add the option in your bolus calculator to apply another (!) customizable factor at the end of the calculation which could be useful for fatty meals, e.g Pizza (default 0.7)." = "Den alternativa boluskalkylatorn använder en annan algoritm för beräkning av bolus. För individuell justering kan du ändra justeringsfaktor (standardvärde 0.8) beroende på om du vill få högre (över 1) eller mindre (under 1) bolusrekommendationer.\n\nFö extra feta måltider, tex pizza, finns möjlighet att minska rekommenderad bolus med en annan faktor (standard 0,7).";
 
+/* Bolus Calculator Setting */
+"1. Use the OpenAPS eventual glucose prediction for computing the insulin recommended. This setting will enable the \"old\" calculator. On by default.\n\n2. Use the OpenAPS minPredBG prediction as a complementary safety guard rail, not allowing the glucose prediction to descend below your threshold. This setting can be used together with or without the eventual glucose. On by default" = "1. Använd OpenAPS-glukosprognos för din bolusrekommendation. Denna inställning kommer att aktivera \"gamla\" kalkylatorn. På som standard.\n\n2. Använd OpenAPS-minPredBG-prognos som en kompletterande säkerhetsinställning. Denna inställning kan användas tillsammans med eller utan OpenAPS-glukosprognosen. På som standard";
+
 /* Settings Section */
 "Extra Features" = "Extra";
+
+/* Header */
+"UI/UX Settings" = "UI/UX-inställningar";
 
 /* UI/UX option */
 "Display Predictions" = "Visa prognoser";
@@ -2822,6 +3682,12 @@ Enact a temp Basal or a temp target */
 
 /* UI/UX option */
 "Display Temp Targets Button" = "Visa knapp för tillfälligt målvärde";
+
+/* UI/UX option */
+"Display Profile Override Button" = "Visa profilknapp";
+
+/* UI/UX option */
+"Display Meal Button" = "Visa måltidsknapp";
 
 /* UI/UX option */
 "Home View Button Panel " = "Knappar på hemskärmen ";
@@ -2862,13 +3728,55 @@ Enact a temp Basal or a temp target */
 "Display Glucose Delta" = "Visa exakt glukosförändring";
 
 /* UI/UX option */
+"Display Sensor Age" = "Visa sensorålder";
+
+/* UI/UX option */
+"Display Sensor Time Remaining" = "Visa återstående tid för sensor";
+
+/* UI/UX option */
 "Hide Concentration Badge" = "Dölj koncentrationsmärke";
 
 /* UI/UX option */
 "Use insulin bars" = "Använd insulinstänger";
 
 /* UI/UX option */
+"Use carb bars" = "Använd kolhydratstänger";
+
+/* UI/UX option */
 "Hide the bolus amount strings when amount is under" = "Dölj bolusmängdtext när beloppet är under";
+
+/* UI/UX option */
+"Display carb equivalents" = "Visa kolhydratekvivalenter";
+
+/* UI/UX option */
+"Display carb equivalent amount" = "Visa kolhydratekvivalentmängd";
+
+/* UI/UX option */
+"Display Ratio and a History View button" = "Visa kvot och knapp för historikvisning";
+
+/* UI/UX option */
+"Home View Ratio Button" = "Kvotknapp på hemvy";
+
+/* UI/UX option */
+"Light" = "Ljus";
+
+/* UI/UX option */
+"Dark" = "Mörk";
+
+/* UI/UX option */
+"Auto" = "Automatisk";
+
+/* UI/UX option */
+"Color Scheme" = "Färgschema";
+
+/* UI/UX option */
+"Light / Dark Mode" = "Ljust / Mörkt";
+
+/* Debug option */
+"Neglect Carbohydrates in oref0" = "Negligera kolhydrater i oref0";
+
+/* Debug option */
+"Hide Predictions" = "Dölj prognoser";
 
 /* Setting title */
 "Bolus Calculator" = "Boluskalkylator";
@@ -2878,6 +3786,15 @@ Enact a temp Basal or a temp target */
 
 /* Notification option */
 "Live Activity" = "Liveaktiviteter";
+
+/* Show Live Activity */
+"Show Live Activity" = "Visa Liveaktiviteter";
+
+/* Display Chart */
+"Display Chart" = "Visa diagram";
+
+/* Show Predictions */
+"Show Predictions" = "Visa prognoser";
 
 /* Notification option */
 "Live activity displays blood glucose live on the lock screen and on the dynamic island (if available)" = "Liveaktivitet visar senaste blodsockeravläsning på låsskärmen och på Dynamic Island, om sådan finns på din iPhone-modell";
@@ -2929,3 +3846,119 @@ Enact a temp Basal or a temp target */
 
 /* Headline "Adjustment Factor" */
 "Adjustment Factor" = "Justeringskonstant";
+
+/* Apple Watch Overrides */
+"Overrides" = "Undantag";
+
+/* Apple Watch Overrides */
+"Cancel Override" = "Avbryt Undantag";
+
+/* Headline "To enable settings, go to the App Config section in iOS Settings App" */
+"To enable settings, go to the App Config section in iOS Settings App" = "För att visa inställningar gå till iOS-inställningar, under Appar/iAPS";
+
+/* Section header in CGM view */
+"Active CGM" = "Aktiv CGM";
+
+/* pump name label, when pump is a cgm "Pump/CGM" */
+"Pump/CGM" = "Pump/CGM";
+
+/* Button "Stop using the pump as CGM" */
+"Stop using the pump as CGM" = "Sluta att använda pumpen som CGM";
+
+/* Section header in CGM view */
+"Shared App Group Source" = "Källa för delad appgrupp";
+
+/* prefix for the shared app group application */
+"Reading from" = "Läser från";
+
+/* button to disconnect from the shared app group "Disconnect" */
+"Disconnect" = "Koppla från";
+
+
+/* description for Shared App Group Source section */
+"Read BG from an external CGM app using a shared app group." = "Läs BG från en extern CGM-app med hjälp av en delad appgrupp.";
+
+
+/* prefix before the app name on the button to start reading from shared app group */
+"Read from " = "Läs från ";
+
+/* description for the backfill section in Nightscout settings screen */
+"Fetches old glucose readings from Nightscout" = "Hämtar gamla glukosvärden från Nightscout";
+
+/* header and button label for the 'upload old glucose' action in Nightscout settings screen */
+"Upload glucose" = "Ladda upp glukosvärden";
+
+/* description for the 'upload old glucose' section in Nightscout settings screen */
+"Uploads old glucose readings to Nightscout" = "Ladda upp gamla glukosvärden till Nightscout";
+
+/* message when uploads are enabled, but glucose uploads are disabled, in Nightscout settings screen */
+"Glucose upload disabled in CGM settings" = "Uppladdning av blodsocker inaktiverat i CGM-inställningar";
+
+/* header for the CGM list in CGM settings screen */
+"Connect to CGM" = "Anslut till CGM";
+
+
+/* message displayed when the pump is configured to be the CGM as well (enlite), in CGM settings screen */
+"Pump+CGM" = "Pump+CGM";
+
+/* label for the button to remove the CGM when the pump is configured to be the CGM as well (enlite), in CGM settings screen */
+"Stop using the pump as CGM" = "Sluta att använda pumpen som CGM";
+
+/* hint under the CGM list in CGM settings screen */
+"To receive reading from xDrip4iOS, Glucose Direct or another compatible app, select Shared App Group CGM." = "För att ta emot blodsocker från xDrip4iOS, Glucose Direct eller en annan kompatibel app, välj delad appgrupp-CGM.";
+
+/* message displayed in pump settings screen when the pump manager reports uncertain delivery */
+"Pump delivery uncertain" = "Pumpleverans osäker";
+
+/* message displayed on home screen when the pump is added but not fully onboarded */
+"Re-connect pump!" = "Återanslut pump!";
+
+/* 'fetch' toggle label in nightscout settings */
+"Fetch" = "Ladda ner";
+
+/* 'fetch' section header in nightscout settings */
+"Allow Fetching" = "Tillåt nedladdningar";
+
+/* 'fetch' scection footer in nightscout settings */
+"iAPS will fetch announcements, carbs and temp targets from Nightscout" = "iAPS kommer att hämta aviseringar, kolhydrater och temporära målvärden från Nightscout";
+
+/* main chart settings - toggle, controls whether to draw the in-range area backdrop (fill) */
+"In-range area highlight" = "Markerat målområde";
+
+/* main chart settings - toggle, controls whether to show inline BG peaks */
+"Glucose peaks" = "Blodsockerfokus";
+
+/* main chart settings - toggle, controls whether to show the predictions legend */
+"Predictions legend" = "Prognosförklaring";
+
+/* main chart settings - toggle, controls whether to draw the secondary chart backdrop (fill) */
+"Secondary chart backdrop" = "Bakgund för sekundärt diagram";
+
+/* main chart settings - toggle, controls whether to show insulin activity grid lines */
+"Insulin activity grid lines" = "Hjlplinjer för insulinaktivitetsdiagram";
+
+/* main chart settings - toggle, controls whether to show insulin activity axis labels */
+"Insulin activity labels" = "Etiketter för insulinaktivitet";
+
+/* main chart settings - secondary chart section header */
+"Secondary chart" = "Sekundärt diagram";
+
+/* main chart settings - navigation title and the navigation link label */
+"Main Chart settings" = "Inställningar för huvuddiagram";
+
+/* UI/UX settings - main chart section header */
+"Main Chart" = "Huvuddiagram";
+
+/* main chart settings - toggle, controls whether to show y-axis labels (glucose) */
+"Y-axis labels" = "Y-axeletiketter";
+
+"Fiber" = "Fiber";
+
+"Sugars" = "Socker";
+
+"Search Results" = "Sökresultat";
+
+"Results for" = "Resultat för";
+
+/* name of complete meals when saving */
+"Complete Meal" = "Fullständig måltid";

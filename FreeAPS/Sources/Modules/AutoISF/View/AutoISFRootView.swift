@@ -5,7 +5,12 @@ import Swinject
 extension AutoISF {
     struct RootView: BaseView {
         let resolver: Resolver
-        @StateObject var state = StateModel()
+        @StateObject var state: StateModel
+
+        init(resolver: Resolver) {
+            self.resolver = resolver
+            _state = StateObject(wrappedValue: StateModel(resolver: resolver))
+        }
 
         @State var isPresented = false
         @State var description = Text("")
@@ -65,6 +70,7 @@ extension AutoISF {
                                 }
                         }.disabled(isPresented)
                     }
+
                 } header: { Text("Experimental").foregroundStyle(.red) }
 
                 if state.autoisf {
@@ -81,7 +87,84 @@ extension AutoISF {
                                     }
                             }.disabled(isPresented)
                         }
+
+                        HStack {
+                            Toggle(isOn: $state.autocr) {
+                                Text("Enable Auto CR")
+                                    .onTapGesture {
+                                        info(
+                                            header: "Enable Auto CR",
+                                            body: "Highly Experimental!\n\nAdjusts your profile Carb Ratio each loop by the same amount as your profile ISF using autoISF settings.\n\nUse the bolus calculator with great care, this may cause dose recommendations to be too strong.\n\nAutoCR + autoISF can stack. Reduce autoISF aggressiveness first (e.g., lower max/weights), then enable AutoCR and monitor closely.",
+                                            useGraphics: nil
+                                        )
+                                    }
+                            }.disabled(isPresented)
+                        }
                     } header: { Text("Toggles") }
+
+                    Section {
+                        Toggle(isOn: $state.nightTime.enabled) {
+                            Text("Disable during nighttime")
+                                .onTapGesture {
+                                    info(
+                                        header: "Disable during nighttime",
+                                        body: "Disables Auto ISF during nighttime, or any other period selected.",
+                                        useGraphics: nil
+                                    )
+                                }
+                        }
+                        .disabled(isPresented)
+
+                        if state.nightTime.enabled {
+                            HStack {
+                                Text("From")
+
+                                DatePicker(
+                                    "",
+                                    selection: Binding(
+                                        get: {
+                                            timeFrom(
+                                                hour: state.nightTime.startHour,
+                                                minute: state.nightTime.startMinute
+                                            )
+                                        },
+                                        set: { newValue in
+                                            let components = Calendar.current.dateComponents([.hour, .minute], from: newValue)
+                                            state.nightTime.startHour = components.hour ?? 0
+                                            state.nightTime.startMinute = components.minute ?? 0
+                                        }
+                                    ), displayedComponents: .hourAndMinute
+                                )
+                                .datePickerStyle(.graphical)
+                                .labelsHidden()
+                            }
+                            .padding(.vertical, 2)
+
+                            HStack {
+                                Text("To")
+
+                                DatePicker(
+                                    "",
+                                    selection: Binding(
+                                        get: {
+                                            timeFrom(
+                                                hour: state.nightTime.endHour,
+                                                minute: state.nightTime.endMinute
+                                            )
+                                        },
+                                        set: { newValue in
+                                            let components = Calendar.current.dateComponents([.hour, .minute], from: newValue)
+                                            state.nightTime.endHour = components.hour ?? 0
+                                            state.nightTime.endMinute = components.minute ?? 0
+                                        }
+                                    ), displayedComponents: .hourAndMinute
+                                )
+                                .datePickerStyle(.graphical)
+                                .labelsHidden()
+                            }
+                            .padding(.vertical, 2)
+                        }
+                    } header: { Text("Nighttime") }
 
                     Section {
                         HStack {
@@ -159,24 +242,10 @@ extension AutoISF {
                         }
 
                         HStack {
-                            Text("Dura ISF Hourly Max Change")
+                            Text(NSLocalizedString("ISF weight for higher BG", comment: "") + " (bg)")
                                 .onTapGesture {
                                     info(
-                                        header: "Dura ISF Hourly Max Change",
-                                        body: "Rate at which ISF is reduced per hour assuming BG level remains at double target for that time. When value = 1.0, ISF is reduced to 50% after 1 hour of BG level at 2x target.",
-                                        useGraphics: nil
-                                    )
-                                }
-                            Spacer()
-                            DecimalTextField("0", value: $state.autoISFhourlyChange, formatter: formatter)
-                                .disabled(isPresented)
-                        }
-
-                        HStack {
-                            Text("ISF weight for higher BG's")
-                                .onTapGesture {
-                                    info(
-                                        header: "ISF weight for higher BG's",
+                                        header: "ISF weight for higher BG",
                                         body: "Default value: 0.0 This is the weight applied to the polygon which adapts ISF if glucose is above target. With 0.0 the effect is effectively disabled.",
                                         useGraphics: nil
                                     )
@@ -187,10 +256,24 @@ extension AutoISF {
                         }
 
                         HStack {
-                            Text("ISF weight for lower BG's")
+                            Text(NSLocalizedString("Duration Weight", comment: "") + " (dura)")
                                 .onTapGesture {
                                     info(
-                                        header: "ISF weight for lower BG's",
+                                        header: "Duration Weight",
+                                        body: "Weight for a prolonged high glucose. For every hour the glucose stays high this adjustment will lower your ISF more.\n\nThe formula for Dura ISF adjustment is:\n\nDura ISF = 1 + hours above target * weight / target * (average glucose - target glucose)",
+                                        useGraphics: nil
+                                    )
+                                }
+                            Spacer()
+                            DecimalTextField("0", value: $state.autoISFhourlyChange, formatter: formatter)
+                                .disabled(isPresented)
+                        }
+
+                        HStack {
+                            Text("ISF weight for lower BG")
+                                .onTapGesture {
+                                    info(
+                                        header: "ISF weight for lower BG",
                                         body: "Default value: 0.0 This is the weight applied to the polygon which adapts ISF if glucose is below target. With 0.0 the effect is effectively disabled.",
                                         useGraphics: nil
                                     )
@@ -201,7 +284,7 @@ extension AutoISF {
                         }
 
                         HStack {
-                            Text("ISF weight for postprandial BG rise")
+                            Text(NSLocalizedString("ISF weight for postprandial BG rise", comment: "") + " (pp)")
                                 .onTapGesture {
                                     info(
                                         header: "ISF weight for postprandial BG rise",
@@ -215,7 +298,7 @@ extension AutoISF {
                         }
 
                         HStack {
-                            Text("ISF weight while BG accelerates")
+                            Text(NSLocalizedString("ISF weight while BG accelerates", comment: "") + " (acce)")
                                 .onTapGesture {
                                     info(
                                         header: "ISF weight while BG accelerates",
@@ -247,7 +330,7 @@ extension AutoISF {
                                 .onTapGesture {
                                     info(
                                         header: "Max IOB Threshold Percent",
-                                        body: "Percent of the max IOB setting to use for SMBs while Auto ISF is enabled.\n\nWhile current IOB is below the threshold, the SMB amount can exceed the threshold by 30%, however never the max IOB setting.\n\nAt 100% this setting is disabled.",
+                                        body: "Percentage of the max IOB setting to use for SMBs while Auto ISF is enabled.\n\nWhile current IOB is below the threshold, the SMB amount can exceed the threshold by 30%, however never the max IOB setting.\n\nAt 100% this setting is disabled.",
                                         useGraphics: nil
                                     )
                                 }
@@ -311,7 +394,7 @@ extension AutoISF {
                                     .onTapGesture {
                                         info(
                                             header: "Upper BG limit",
-                                            body: "SMBs will be diabled when under this limit, while a B30 Basal rate is running. Default is 130 mg/dl (7.2 mmol/l).",
+                                            body: "SMBs will be disabled when under this limit, while a B30 Basal rate is running. Default is 130 mg/dl (7.2 mmol/l).",
                                             useGraphics: nil
                                         )
                                     }
@@ -329,7 +412,7 @@ extension AutoISF {
                                     .onTapGesture {
                                         info(
                                             header: "Upper Delta limit",
-                                            body: "SMBs will be diabled when under this limit, while a B30 Basal rate is running. Default is 8 mg/dl (0.5 mmol/l).",
+                                            body: "SMBs will be disabled when under this limit, while a B30 Basal rate is running. Default is 8 mg/dl (0.5 mmol/l).",
                                             useGraphics: nil
                                         )
                                     }
@@ -460,12 +543,19 @@ extension AutoISF {
                 if scrollView { infoScrollView() } else { infoView() }
             }
             .dynamicTypeSize(...DynamicTypeSize.xxLarge)
-            .onAppear(perform: configureView)
             .navigationBarTitle("Auto ISF")
             .navigationBarTitleDisplayMode(.automatic)
             .sheet(isPresented: $presentHistory) {
                 AutoISFHistoryView(units: state.units)
+                    .environment(\.colorScheme, colorScheme)
             }
+        }
+
+        private func timeFrom(hour: Int, minute: Int) -> Date {
+            var components = DateComponents()
+            components.hour = hour
+            components.minute = minute
+            return Calendar.current.date(from: components) ?? Date()
         }
 
         private func info(header: String, body: String, useGraphics: (any View)?) {
@@ -533,7 +623,7 @@ extension AutoISF {
             }
 
             .padding(.all, 20)
-            .foregroundStyle(colorScheme == .dark ? Color.white : Color.black)
+            .foregroundStyle(colorScheme == .dark ? IAPSconfig.previewBackgroundLight : IAPSconfig.previewBackgroundDark)
             .background(
                 RoundedRectangle(cornerRadius: 8, style: .continuous)
                     .fill(colorScheme == .dark ? Color(.black).opacity(0.3) : Color(.white))

@@ -65,7 +65,7 @@ function generate(iob, currenttemp, glucose, profile, autosens = null, meal = nu
         }
         
             //SMBs
-        if (disableSMBs(dynamicVariables)) {
+        if (disableSMBs(dynamicVariables, clock)) {
             microbolusAllowed = false;
             console.error("SMBs disabled by Override");
         }
@@ -84,26 +84,22 @@ function generate(iob, currenttemp, glucose, profile, autosens = null, meal = nu
     }
     
     // Dynamic ISF
-    if (profile.useNewFormula) {
+    if (profile.useNewFormula && !isAISFenabled(profile)) {
         dynisf(profile, autosens_data, dynamicVariables, glucose);
-    }
-    
-    // If ignoring flat CGM errors, circumvent also the Oref0 error
-    if (dynamicVariables.disableCGMError) {
-        if (glucose.length > 1 && Math.abs(glucose[0].glucose - glucose[1].glucose) < 5) {
-            if (glucose[1].glucose >= glucose[0].glucose) {
-                glucose[1].glucose -= 5;
-            } else {glucose[1].glucose += 5; }
-            console.log("Flat CGM by-passed.");
-        }
     }
     
     var glucose_status = freeaps_glucoseGetLast(glucose)
     
     // Auto ISF
-    if (profile.iaps.autoisf) {
+    if (isAISFenabled(profile) && profile.aisf) {
         autosens_data.ratio = profile.aisf;
         console.log("Auto ISF ratio: " + autosens_data.ratio);
+        
+        if (profile.iaps.autocr) {
+            profile.carb_ratio = round(profile.carb_ratio / profile.aisf, 1);
+            console.log("Auto CR ratio: " + profile.carb_ratio);
+        }
+        
         if (microbolusAllowed && !profile.microbolusAllowed) {
             microbolusAllowed = false;
             console.log("SMBs disabled by Auto ISF layer");
@@ -112,11 +108,7 @@ function generate(iob, currenttemp, glucose, profile, autosens = null, meal = nu
 
     // In case Basal Rate been set in midleware or B30
     if (profile.set_basal && profile.basal_rate) {
-        if (!profile.iaps.closedLoop) {
-            profile.set_basal = false;
-        } else {
-            console.log("Basal Rate set by middleware or B30 to " + profile.basal_rate + " U/h.");
-        }
+        console.log("Basal Rate set by middleware or B30 to " + profile.basal_rate + " U/h.");
     }
     
     /* For testing replace with:
@@ -130,7 +122,7 @@ function dynisf(profile, autosens_data, dynamicVariables, glucose) {
     var dynISFenabled = true;
     
     //Turn off when Auto ISF is used
-    if (profile.iaps.autoisf) {
+    if (isAISFenabled(profile)) {
         console.log("Dynamic ISF disabled due to Auto ISF.");
         return;
     }
@@ -273,21 +265,46 @@ function exercising(profile, dynamicVariables) {
     return false
 }
 
-function disableSMBs(dynamicVariables) {
+function disableSMBs(dynamicVariables, now) {
     if (dynamicVariables.smbIsOff) {
-        if (!dynamicVariables.smbIsAlwaysOff) {
-            return true;
-        }
-        const hour = new Date().getHours();
-        if (dynamicVariables.end < dynamicVariables.start && hour < 24 && hour > dynamicVariables.start) {
-            dynamicVariables.end += 24;
-        }
-        if (hour >= dynamicVariables.start && hour <= dynamicVariables.end) {
-            return true;
-        }
-        if (dynamicVariables.end < dynamicVariables.start && hour < dynamicVariables.end) {
-            return true;
+        // smbIsAlwaysOff=true means "SMB are scheduled, NOT always off"
+        if (!dynamicVariables.smbIsAlwaysOff) { return true; }
+
+        var start = dynamicVariables.start;
+        var end = dynamicVariables.end;
+        var hour = now.getHours();
+
+        if (start <= end) {
+            return hour >= start && hour <= end;
+        } else {
+            return hour >= start || hour <= end;
         }
     }
     return false
+}
+
+function isAISFenabled(profile) {
+    const dynamicVariables = profile.dynamicVariables || { } ;
+    return (autoisfEffective(profile) && !(dynamicVariables.aisfOverridden && !dynamicVariables.autoISFoverrides.autoisf)) || (dynamicVariables.aisfOverridden && dynamicVariables.autoISFoverrides.autoisf)
+}
+
+function isNighttime(nightTime) {
+    if (!nightTime.enabled) return false;
+
+    const nowDate = new Date();
+    const h = nowDate.getHours();
+    const m = nowDate.getMinutes();
+
+    if (h == null || m == null) return false;
+
+    const now = h * 60 + m;
+    const start = nightTime.startHour * 60 + nightTime.startMinute;
+    const end = nightTime.endHour * 60 + nightTime.endMinute;
+
+    return (start > end && (now >= start || now < end)) ||
+           (start <= end && now >= start && now < end);
+}
+
+function autoisfEffective(profile) {
+    return profile.iaps.autoisf && !isNighttime(profile.iaps.nightTime);
 }

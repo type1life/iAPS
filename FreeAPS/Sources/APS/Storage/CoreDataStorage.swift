@@ -20,6 +20,71 @@ final class CoreDataStorage {
         return fetchGlucose
     }
 
+    func fetchRecentGlucose() -> Readings? {
+        var fetchGlucose = [Readings]()
+        coredataContext.performAndWait {
+            let requestReadings = Readings.fetchRequest() as NSFetchRequest<Readings>
+            let sort = NSSortDescriptor(key: "date", ascending: false)
+            requestReadings.sortDescriptors = [sort]
+            requestReadings.fetchLimit = 1
+            try? fetchGlucose = self.coredataContext.fetch(requestReadings)
+        }
+        return fetchGlucose.first
+    }
+
+    func fetchInsulinData(interval: NSDate) -> [IOBTick0] {
+        var fetchTicks = [InsulinActivity]()
+        coredataContext.performAndWait {
+            let requestTicks = InsulinActivity.fetchRequest()
+            let sort = NSSortDescriptor(key: "date", ascending: true)
+            requestTicks.sortDescriptors = [sort]
+            requestTicks.predicate = NSPredicate(
+                format: "date > %@", interval
+            )
+            try? fetchTicks = self.coredataContext.fetch(requestTicks)
+        }
+        let result = fetchTicks.compactMap { tick -> IOBTick0? in
+            guard let date = tick.date, let activity = tick.activity, let iob = tick.iob else {
+                return nil
+            }
+            return IOBTick0(
+                time: date,
+                iob: iob as Decimal,
+                activity: activity as Decimal
+            )
+        }
+        return result
+    }
+
+    func saveInsulinData(iobEntries: [IOBTick0]) -> Decimal? {
+        guard let firstDate = iobEntries.compactMap(\.time).min() else { return nil }
+        let iob = iobEntries[0].iob
+
+        coredataContext.perform {
+            let deleteRequest = InsulinActivity.fetchRequest()
+            deleteRequest.predicate = NSPredicate(
+                format: "date >= %@ OR date < %@",
+                firstDate.addingTimeInterval(-60) as NSDate, // delete previous "future" entries
+                firstDate.addingTimeInterval(-86400) as NSDate // delete entries older than 1 day
+            )
+            do {
+                let recordsToDelete = try self.coredataContext.fetch(deleteRequest)
+                for record in recordsToDelete {
+                    self.coredataContext.delete(record)
+                }
+            } catch { return }
+
+            for iobEntry in iobEntries {
+                let record = InsulinActivity(context: self.coredataContext)
+                record.date = iobEntry.time
+                record.iob = NSDecimalNumber(decimal: iobEntry.iob)
+                record.activity = NSDecimalNumber(decimal: iobEntry.activity)
+            }
+            try? self.coredataContext.save()
+        }
+        return iob
+    }
+
     func fetchLoopStats(interval: NSDate) -> [LoopStatRecord] {
         var fetchLoopStats = [LoopStatRecord]()
         coredataContext.performAndWait {
@@ -96,6 +161,20 @@ final class CoreDataStorage {
         return carbs
     }
 
+    func fetchMealData(interval: NSDate) -> [Carbohydrates] {
+        var data = [Carbohydrates]()
+        coredataContext.performAndWait {
+            let requestData = Carbohydrates.fetchRequest() as NSFetchRequest<Carbohydrates>
+            let sortData = NSSortDescriptor(key: "date", ascending: false)
+            requestData.sortDescriptors = [sortData]
+            requestData.predicate = NSPredicate(
+                format: "date > %@", interval
+            )
+            try? data = self.coredataContext.fetch(requestData)
+        }
+        return data
+    }
+
     func fetchStats() -> [StatsData] {
         var stats = [StatsData]()
         coredataContext.performAndWait {
@@ -114,6 +193,7 @@ final class CoreDataStorage {
             let requestInsulinDistribution = InsulinDistribution.fetchRequest() as NSFetchRequest<InsulinDistribution>
             let sortInsulin = NSSortDescriptor(key: "date", ascending: false)
             requestInsulinDistribution.sortDescriptors = [sortInsulin]
+            requestInsulinDistribution.fetchLimit = 1
             try? insulinDistribution = coredataContext.fetch(requestInsulinDistribution)
         }
         return insulinDistribution
@@ -125,6 +205,7 @@ final class CoreDataStorage {
             let requestReasons = Reasons.fetchRequest() as NSFetchRequest<Reasons>
             let sort = NSSortDescriptor(key: "date", ascending: false)
             requestReasons.sortDescriptors = [sort]
+            requestReasons.fetchLimit = 1
             try? suggestion = coredataContext.fetch(requestReasons)
         }
         return suggestion.first
@@ -144,6 +225,18 @@ final class CoreDataStorage {
         return reasonArray
     }
 
+    func recentReason() -> Reasons? {
+        var reasonArray = [Reasons]()
+        coredataContext.performAndWait {
+            let requestReasons = Reasons.fetchRequest() as NSFetchRequest<Reasons>
+            let sort = NSSortDescriptor(key: "date", ascending: false)
+            requestReasons.sortDescriptors = [sort]
+            requestReasons.fetchLimit = 1
+            try? reasonArray = self.coredataContext.fetch(requestReasons)
+        }
+        return reasonArray.first
+    }
+
     func saveStatUploadCount() {
         coredataContext.performAndWait { [self] in
             let saveStatsCoreData = StatsData(context: self.coredataContext)
@@ -154,11 +247,14 @@ final class CoreDataStorage {
     }
 
     func saveVNr(_ versions: Version?) {
-        if let version = versions {
-            coredataContext.performAndWait { [self] in
-                let saveNr = VNr(context: self.coredataContext)
-                saveNr.nr = version.main
-                saveNr.dev = version.dev
+        guard let version = versions else { return }
+        guard version.main != "" else { return }
+        coredataContext.perform { [self] in
+            let saveNr = VNr(context: self.coredataContext)
+            saveNr.nr = version.main
+            saveNr.dev = version.dev
+
+            if coredataContext.hasChanges {
                 saveNr.date = Date.now
                 try? self.coredataContext.save()
             }
@@ -175,6 +271,34 @@ final class CoreDataStorage {
             try? nr = coredataContext.fetch(requestNr)
         }
         return nr.first
+    }
+
+    func recentMeal() -> Meals? {
+        var meals = [Meals]()
+        coredataContext.performAndWait {
+            let requestmeals = Meals.fetchRequest() as NSFetchRequest<Meals>
+            let sort = NSSortDescriptor(key: "createdAt", ascending: false)
+            requestmeals.sortDescriptors = [sort]
+            requestmeals.fetchLimit = 1
+            try? meals = coredataContext.fetch(requestmeals)
+        }
+        return meals.first
+    }
+
+    func saveMeal(_ stored: [CarbsEntry], now: Date) {
+        coredataContext.perform { [self] in
+            let save = Meals(context: coredataContext)
+            if let entry = stored.first {
+                save.createdAt = now
+                save.actualDate = entry.actualDate ?? Date.now
+                save.id = entry.id ?? ""
+                save.carbs = Double(entry.carbs)
+                save.fat = Double(entry.fat ?? 0)
+                save.protein = Double(entry.protein ?? 0)
+                save.note = entry.note
+                try? coredataContext.save()
+            }
+        }
     }
 
     func fetchMealPreset(_ name: String) -> Presets? {
@@ -351,11 +475,58 @@ final class CoreDataStorage {
         var conc = [InsulinConcentration]()
         coredataContext.performAndWait {
             let requestConc = InsulinConcentration.fetchRequest() as NSFetchRequest<InsulinConcentration>
-            let sort = NSSortDescriptor(key: "date", ascending: true)
+            let sort = NSSortDescriptor(key: "date", ascending: false)
             requestConc.sortDescriptors = [sort]
+            requestConc.fetchLimit = 1
             try? conc = coredataContext.fetch(requestConc)
         }
-        let recent = conc.last
+        let recent = conc.first
         return (recent?.concentration ?? 1.0, recent?.incrementSetting ?? 0.1)
+    }
+}
+
+@objc(NightTimeConfigurationBox) public final class NightTimeConfigurationBox: NSObject, NSSecureCoding {
+    public static var supportsSecureCoding: Bool { true }
+
+    let startHour: Int
+    let startMinute: Int
+    let endHour: Int
+    let endMinute: Int
+    let enabled: Bool
+
+    init(_ value: NightTimeConfiguration) {
+        startHour = value.startHour
+        startMinute = value.startMinute
+        endHour = value.endHour
+        endMinute = value.endMinute
+        enabled = value.enabled
+        super.init()
+    }
+
+    var value: NightTimeConfiguration {
+        NightTimeConfiguration(
+            startHour: startHour,
+            startMinute: startMinute,
+            endHour: endHour,
+            endMinute: endMinute,
+            enabled: enabled
+        )
+    }
+
+    public func encode(with coder: NSCoder) {
+        coder.encode(startHour, forKey: "startHour")
+        coder.encode(startMinute, forKey: "startMinute")
+        coder.encode(endHour, forKey: "endHour")
+        coder.encode(endMinute, forKey: "endMinute")
+        coder.encode(enabled, forKey: "enabled")
+    }
+
+    public required init?(coder: NSCoder) {
+        startHour = coder.decodeInteger(forKey: "startHour")
+        startMinute = coder.decodeInteger(forKey: "startMinute")
+        endHour = coder.decodeInteger(forKey: "endHour")
+        endMinute = coder.decodeInteger(forKey: "endMinute")
+        enabled = coder.decodeBool(forKey: "enabled")
+        super.init()
     }
 }

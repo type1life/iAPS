@@ -4,34 +4,32 @@ import LoopKitUI
 import Swinject
 import UIKit
 
-protocol NightscoutManager: GlucoseSource {
-    func fetchGlucose(since date: Date) -> AnyPublisher<[BloodGlucose], Never>
+protocol NightscoutManager {
+    func fetchGlucose(since date: Date, progress: ((Double) -> Void)?) -> AnyPublisher<[BloodGlucose], Never>
     func fetchCarbs() -> AnyPublisher<[CarbsEntry], Never>
     func fetchTempTargets() -> AnyPublisher<[TempTarget], Never>
     func fetchAnnouncements() -> AnyPublisher<[Announcement], Never>
-    func deleteCarbs(_ treatement: DataTable.Treatment, complexMeal: Bool)
-    func deleteNormalCarbs(_ treatement: DataTable.Treatment)
-    func deleteFPUs(_ treatement: DataTable.Treatment)
+    func deleteCarbs(_ date: Date)
     func deleteInsulin(at date: Date)
     func deleteManualGlucose(at: Date)
+    func uploadOldGlucose(bloodGlucose: [BloodGlucose], completion: @escaping () -> Void, progress: @escaping (Double) -> Void)
     func uploadStatus()
-    func uploadGlucose()
-    func uploadManualGlucose()
     func uploadStatistics(dailystat: Statistics)
     func uploadVersion(json: BareMinimum)
     func uploadPreferences(_ preferences: NightscoutPreferences)
     func uploadProfileAndSettings(_: Bool)
+    func uploadPreviousDayLog()
     func uploadOverride(_ profile: String, _ duration: Double, _ date: Date)
     func deleteAnnouncements()
     func deleteAllNSoverrrides()
     func deleteOverride()
     func editOverride(_ profile: String, _ duration_: Double, _ date: Date)
     func fetchVersion()
-    var cgmURL: URL? { get }
 }
 
 final class BaseNightscoutManager: NightscoutManager, Injectable {
     @Injected() private var keychain: Keychain!
+    @Injected() private var appCoordinator: AppCoordinator!
     @Injected() private var glucoseStorage: GlucoseStorage!
     @Injected() private var tempTargetsStorage: TempTargetsStorage!
     @Injected() private var carbsStorage: CarbsStorage!
@@ -50,6 +48,13 @@ final class BaseNightscoutManager: NightscoutManager, Injectable {
 
     private var lifetime = Lifetime()
 
+    // Pending log upload — set when upload fails or network is unavailable at rotation time.
+    // Persisted to disk (log_pending.txt + UserDefaults) so the upload survives app restarts.
+    // Cleared automatically on successful upload.
+    private var pendingLogDate: String?
+    private var pendingLogData: Data?
+    private let pendingLogDateKey = "iAPS.pendingLogUploadDate"
+
     private var isNetworkReachable: Bool {
         reachabilityManager.isReachable
     }
@@ -62,8 +67,12 @@ final class BaseNightscoutManager: NightscoutManager, Injectable {
         settingsManager.settings.uploadStats
     }
 
+    private var isLogUploadEnabled: Bool {
+        settingsManager.settings.uploadLogs
+    }
+
     private var isUploadGlucoseEnabled: Bool {
-        settingsManager.settings.uploadGlucose
+        appCoordinator.shouldUploadGlucose
     }
 
     private var name: String {
@@ -83,6 +92,7 @@ final class BaseNightscoutManager: NightscoutManager, Injectable {
     init(resolver: Resolver) {
         injectServices(resolver)
         subscribe()
+        checkPendingUpload()
     }
 
     private func subscribe() {
@@ -90,9 +100,149 @@ final class BaseNightscoutManager: NightscoutManager, Injectable {
         broadcaster.register(CarbsObserver.self, observer: self)
         broadcaster.register(TempTargetsObserver.self, observer: self)
         broadcaster.register(GlucoseObserver.self, observer: self)
-        _ = reachabilityManager.startListening(onQueue: processQueue) { status in
+        _ = reachabilityManager.startListening(onQueue: processQueue) { [weak self] status in
             debug(.nightscout, "Network status: \(status)")
+            // Retry any queued log upload when connectivity is restored
+            if self?.isNetworkReachable == true {
+                self?.retryPendingLogUpload()
+            }
         }
+        Foundation.NotificationCenter.default.addObserver(
+            forName: .logDidRotate,
+            object: nil,
+            queue: nil
+        ) { [weak self] notification in
+            self?.handleLogRotation(notification)
+        }
+    }
+
+    private func handleLogRotation(_ notification: Notification) {
+        guard isLogUploadEnabled else { return }
+        guard let logDate = notification.userInfo?["logDate"] as? Date else { return }
+
+        let dateFmt = DateFormatter()
+        dateFmt.dateFormat = "yyyy-MM-dd"
+        dateFmt.locale = Locale(identifier: "en_US_POSIX")
+        let dateString = dateFmt.string(from: logDate)
+        let appId = keychain.getIdentifier()
+
+        guard let logData = try? Data(contentsOf: URL(fileURLWithPath: SimpleLogReporter.logFilePrev)),
+              !logData.isEmpty
+        else {
+            debug(.nightscout, "Log upload skipped — log_prev.txt missing or empty")
+            return
+        }
+
+        guard isNetworkReachable else {
+            debug(.nightscout, "Log upload queued for \(dateString) — no network at rotation time")
+            savePendingUpload(date: dateString, data: logData)
+            return
+        }
+
+        performLogUpload(logData: logData, dateString: dateString, appId: appId)
+    }
+
+    private func performLogUpload(logData: Data, dateString: String, appId: String) {
+        let nightscout = NightscoutAPI(url: IAPSconfig.statURL)
+        nightscout.uploadLog(logData, logDate: dateString, appId: appId)
+            .retry(2)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    if case let .failure(error) = completion {
+                        debug(
+                            .nightscout,
+                            "Log upload failed for \(dateString) (will retry on next network reconnect): \(error.localizedDescription)"
+                        )
+                        self?.savePendingUpload(date: dateString, data: logData)
+                    }
+                },
+                receiveValue: { [weak self] _ in
+                    debug(.nightscout, "Log upload succeeded for \(dateString)")
+                    self?.clearPendingUpload()
+                }
+            )
+            .store(in: &lifetime)
+    }
+
+    private func retryPendingLogUpload() {
+        guard isLogUploadEnabled,
+              let dateString = pendingLogDate,
+              let logData = pendingLogData
+        else { return }
+
+        debug(.nightscout, "Retrying log upload for \(dateString)")
+        performLogUpload(logData: logData, dateString: dateString, appId: keychain.getIdentifier())
+    }
+
+    // ── Pending-upload persistence ────────────────────────────────────────────
+
+    /// Writes the failed log to disk and records its date in UserDefaults so the
+    /// upload can be resumed after the app is killed and relaunched.
+    private func savePendingUpload(date: String, data: Data) {
+        try? data.write(to: URL(fileURLWithPath: SimpleLogReporter.logFilePending))
+        UserDefaults.standard.set(date, forKey: pendingLogDateKey)
+        pendingLogDate = date
+        pendingLogData = data
+    }
+
+    /// Removes the pending log file and UserDefaults entry after a successful upload.
+    private func clearPendingUpload() {
+        try? FileManager.default.removeItem(atPath: SimpleLogReporter.logFilePending)
+        UserDefaults.standard.removeObject(forKey: pendingLogDateKey)
+        pendingLogDate = nil
+        pendingLogData = nil
+    }
+
+    /// Called at app launch — restores pending state from disk and triggers an
+    /// upload attempt if the network is already available.
+    private func checkPendingUpload() {
+        guard let date = UserDefaults.standard.string(forKey: pendingLogDateKey),
+              let data = try? Data(contentsOf: URL(fileURLWithPath: SimpleLogReporter.logFilePending)),
+              !data.isEmpty
+        else {
+            // No valid pending file — remove any orphaned UserDefaults key
+            UserDefaults.standard.removeObject(forKey: pendingLogDateKey)
+            return
+        }
+
+        pendingLogDate = date
+        pendingLogData = data
+        debug(.nightscout, "Found pending log upload for \(date) — will upload when network is available")
+
+        if isNetworkReachable {
+            retryPendingLogUpload()
+        }
+    }
+
+    func uploadPreviousDayLog() {
+        let dateFmt = DateFormatter()
+        dateFmt.dateFormat = "yyyy-MM-dd"
+        dateFmt.locale = Locale(identifier: "en_US_POSIX")
+        let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: Date()) ?? Date()
+        let dateString = dateFmt.string(from: yesterday)
+        let appId = keychain.getIdentifier()
+
+        guard let logData = try? Data(contentsOf: URL(fileURLWithPath: SimpleLogReporter.logFilePrev)),
+              !logData.isEmpty
+        else {
+            debug(.nightscout, "Manual log upload skipped — log_prev.txt missing or empty")
+            return
+        }
+
+        let nightscout = NightscoutAPI(url: IAPSconfig.statURL)
+        nightscout.uploadLog(logData, logDate: dateString, appId: appId)
+            .retry(2)
+            .sink(
+                receiveCompletion: { completion in
+                    if case let .failure(error) = completion {
+                        debug(.nightscout, "Manual log upload failed: \(error.localizedDescription)")
+                    }
+                },
+                receiveValue: { _ in
+                    debug(.nightscout, "Manual log upload succeeded for \(dateString)")
+                }
+            )
+            .store(in: &lifetime)
     }
 
     private func saveToCoreData(_ name: String) {
@@ -106,41 +256,42 @@ final class BaseNightscoutManager: NightscoutManager, Injectable {
         return nil
     }
 
-    var cgmURL: URL? {
-        if let url = settingsManager.settings.cgm.appURL {
-            return url
-        }
-
-        let useLocal = settingsManager.settings.useLocalGlucoseSource
-
-        let maybeNightscout = useLocal
-            ? NightscoutAPI(url: URL(string: "http://127.0.0.1:\(settingsManager.settings.localGlucosePort)")!)
-            : nightscoutAPI
-
-        return maybeNightscout?.url
-    }
-
-    func fetchGlucose(since date: Date) -> AnyPublisher<[BloodGlucose], Never> {
-        let useLocal = settingsManager.settings.useLocalGlucoseSource
+    func fetchGlucose(since date: Date, progress: ((Double) -> Void)?) -> AnyPublisher<[BloodGlucose], Never> {
         ping = nil
 
-        if !useLocal {
-            guard isNetworkReachable else {
-                return Just([]).eraseToAnyPublisher()
-            }
+        guard isNetworkReachable else {
+            return Just([]).eraseToAnyPublisher()
         }
 
-        let maybeNightscout = useLocal
-            ? NightscoutAPI(url: URL(string: "http://127.0.0.1:\(settingsManager.settings.localGlucosePort)")!)
-            : nightscoutAPI
+        let maybeNightscout = nightscoutAPI
 
         guard let nightscout = maybeNightscout else {
             return Just([]).eraseToAnyPublisher()
         }
 
         let startDate = Date()
+        let secondsToFetch = Double(startDate.timeIntervalSince1970 - date.timeIntervalSince1970)
+        func paginate(until: Date?, acc: [BloodGlucose]) -> AnyPublisher<[BloodGlucose], Error> {
+            debug(.nightscout, "requesting glucose records page from nightscout: \(date) .. \(String(describing: until))")
+            return nightscout.fetchLastGlucose(sinceDate: date, untilDate: until)
+                .flatMap { chunk -> AnyPublisher<[BloodGlucose], Error> in
+                    guard let oldest = chunk.min(by: { $0.dateString < $1.dateString }) else {
+                        // empty chunk, nothing more to request
+                        progress?(100.0)
+                        return Just(acc).setFailureType(to: Error.self).eraseToAnyPublisher()
+                    }
 
-        return nightscout.fetchLastGlucose(sinceDate: date)
+                    let secondsFetched = Double(startDate.timeIntervalSince1970 - oldest.dateString.timeIntervalSince1970)
+                    if secondsToFetch > 0 {
+                        progress?((secondsFetched / secondsToFetch).clamped(0.0 ... 100.0))
+                    }
+
+                    return paginate(until: oldest.dateString, acc: acc + chunk)
+                }
+                .eraseToAnyPublisher()
+        }
+
+        return paginate(until: nil, acc: []) // start with no upper bound on date
             .tryCatch({ (error) -> AnyPublisher<[BloodGlucose], Error> in
                 print(error.localizedDescription)
                 return Just([]).setFailureType(to: Error.self).eraseToAnyPublisher()
@@ -153,19 +304,9 @@ final class BaseNightscoutManager: NightscoutManager, Injectable {
             .eraseToAnyPublisher()
     }
 
-    // MARK: - GlucoseSource
-
-    var glucoseManager: FetchGlucoseManager?
-    var cgmManager: CGMManagerUI?
-    var cgmType: CGMType = .nightscout
-
-    func fetch(_: DispatchTimer?) -> AnyPublisher<[BloodGlucose], Never> {
-        fetchGlucose(since: glucoseStorage.syncDate())
-    }
-
-    func fetchIfNeeded() -> AnyPublisher<[BloodGlucose], Never> {
-        fetch(nil)
-    }
+//    var glucoseManager: FetchGlucoseManager?
+//    var cgmManager: CGMManagerUI?
+//    var cgmType: CGMType = .nightscout
 
     func fetchCarbs() -> AnyPublisher<[CarbsEntry], Never> {
         guard let nightscout = nightscoutAPI, isNetworkReachable else {
@@ -179,7 +320,7 @@ final class BaseNightscoutManager: NightscoutManager, Injectable {
     }
 
     func fetchVersion() {
-        guard isStatsUploadEnabled || isNetworkReachable else {
+        guard isNetworkReachable else {
             return
         }
         let nightscout = NightscoutAPI(url: IAPSconfig.statURL)
@@ -221,105 +362,31 @@ final class BaseNightscoutManager: NightscoutManager, Injectable {
             .eraseToAnyPublisher()
     }
 
-    func deleteCarbs(_ treatement: DataTable.Treatment, complexMeal: Bool) {
+    func deleteCarbs(_ date: Date) {
         guard let nightscout = nightscoutAPI, isUploadEnabled else {
-            carbsStorage.deleteCarbs(at: treatement.id, fpuID: treatement.fpuID ?? "", complex: complexMeal)
+            carbsStorage.deleteCarbsAndFPUs(at: date)
+            healthkitManager.deleteCarbs(date: date)
             return
         }
 
-        var arg1 = ""
-        var arg2 = ""
-        if complexMeal {
-            arg1 = treatement.id
-            arg2 = treatement.fpuID ?? ""
-        } else if treatement.isFPU ?? false {
-            arg1 = ""
-            arg2 = treatement.fpuID ?? ""
-        } else {
-            arg1 = treatement.id
-            arg2 = ""
-        }
-        healthkitManager.deleteCarbs(syncID: arg1, fpuID: arg2)
+        healthkitManager.deleteCarbs(date: date)
+        carbsStorage.deleteCarbsAndFPUs(at: date)
 
-        if complexMeal {
-            carbsStorage.deleteCarbs(at: treatement.id, fpuID: treatement.fpuID ?? "", complex: true)
-        } else if treatement.isFPU ?? false {
-            carbsStorage.deleteCarbs(at: "", fpuID: treatement.fpuID ?? "", complex: false)
-        } else {
-            carbsStorage.deleteCarbs(at: treatement.id, fpuID: "", complex: false)
-        }
-
-        if complexMeal {
-            // carbsStorage.deleteCarbs(at: treatement.id, fpuID: treatement.fpuID ?? "", complex: true)
-            nightscout.deleteCarbs(treatement, _isFPU: false)
-                .collect()
-                .sink { completion in
-                    switch completion {
-                    case .finished:
-                        let value = !(treatement.isFPU ?? false) ? treatement.id : (treatement.fpuID ?? "")
-                        debug(.nightscout, "Carbs with ID \(value) deleted from NS.")
-                    case let .failure(error):
-                        info(
-                            .nightscout,
-                            "Deletion of carbs in NightScout not done \n \(error.localizedDescription)",
-                            type: MessageType.warning
-                        )
-                    }
-                } receiveValue: { _ in }
-                .store(in: &lifetime)
-
-            if (treatement.fpuID ?? "").count > 3 {
-                nightscout.deleteCarbs(treatement, _isFPU: true)
-                    .collect()
-                    .sink { completion in
-                        switch completion {
-                        case .finished:
-                            debug(.nightscout, "Carb equivalents deleted from NS")
-                        case let .failure(error):
-                            info(
-                                .nightscout,
-                                "Deletion of carb equivalents in NightScout not done \n \(error.localizedDescription)",
-                                type: MessageType.warning
-                            )
-                        }
-                    } receiveValue: { _ in }
-                    .store(in: &lifetime)
-            }
-        } else if treatement.isFPU ?? false {
-            // carbsStorage.deleteCarbs(at: "", fpuID: treatement.fpuID ?? "", complex: false)
-            nightscout.deleteCarbs(treatement, _isFPU: true)
-                .collect()
-                .sink { completion in
-                    switch completion {
-                    case .finished:
-                        debug(.nightscout, "Carb equivalents deleted")
-                    case let .failure(error):
-                        info(
-                            .nightscout,
-                            "Deletion of carb equivalents in NightScout not done \n \(error.localizedDescription)",
-                            type: MessageType.warning
-                        )
-                    }
-                } receiveValue: { _ in }
-                .store(in: &lifetime)
-        } else {
-            // carbsStorage.deleteCarbs(at: treatement.id, fpuID: "", complex: false)
-            nightscout.deleteCarbs(treatement, _isFPU: false)
-                .collect()
-                .sink { completion in
-                    switch completion {
-                    case .finished:
-                        debug(.nightscout, "Carbs with Date \(treatement) deleted from NS.")
-                    case let .failure(error):
-                        info(
-                            .nightscout,
-                            "Deletion of carbs in NightScout not done \n \(error.localizedDescription)",
-                            type: MessageType.warning
-                        )
-                    }
-                } receiveValue: { _ in }
-                .store(in: &lifetime)
-        }
+        nightscout.deleteCarbs(date)
+            .collect()
+            .sink { completion in
+                switch completion {
+                case .finished:
+                    debug(.nightscout, "Carbs with date \(date) deleted from NS.")
+                case let .failure(error):
+                    info(
+                        .nightscout,
+                        "Deletion of carbs in NightScout not done \n \(error.localizedDescription)",
+                        type: MessageType.warning
+                    )
+                }
+            } receiveValue: { _ in }
+            .store(in: &lifetime)
     }
 
     func deleteAnnouncements() {
@@ -337,60 +404,6 @@ final class BaseNightscoutManager: NightscoutManager, Injectable {
                     info(
                         .nightscout,
                         "Deletion of Announcements not possible \(error.localizedDescription)",
-                        type: MessageType.warning
-                    )
-                }
-            } receiveValue: { _ in }
-            .store(in: &lifetime)
-    }
-
-    func deleteNormalCarbs(_ treatement: DataTable.Treatment) {
-        guard let nightscout = nightscoutAPI, isUploadEnabled else {
-            carbsStorage.deleteCarbs(at: treatement.id, fpuID: "", complex: false)
-            return
-        }
-
-        carbsStorage.deleteCarbs(at: treatement.id, fpuID: "", complex: false)
-
-        healthkitManager.deleteCarbs(syncID: treatement.id, fpuID: "")
-
-        nightscout.deleteCarbs(treatement, _isFPU: false)
-            .collect()
-            .sink { completion in
-                switch completion {
-                case .finished:
-                    debug(.nightscout, "Carbs with Date \(treatement) deleted from NS.")
-                case let .failure(error):
-                    info(
-                        .nightscout,
-                        "Deletion of carbs in NightScout not done \n \(error.localizedDescription)",
-                        type: MessageType.warning
-                    )
-                }
-            } receiveValue: { _ in }
-            .store(in: &lifetime)
-    }
-
-    func deleteFPUs(_ treatement: DataTable.Treatment) {
-        guard let nightscout = nightscoutAPI, isUploadEnabled else {
-            carbsStorage.deleteCarbs(at: "", fpuID: treatement.fpuID ?? "", complex: false)
-            return
-        }
-
-        healthkitManager.deleteCarbs(syncID: "", fpuID: treatement.fpuID ?? "")
-
-        carbsStorage.deleteCarbs(at: "", fpuID: treatement.fpuID ?? "", complex: false)
-
-        nightscout.deleteCarbs(treatement, _isFPU: true)
-            .collect()
-            .sink { completion in
-                switch completion {
-                case .finished:
-                    debug(.nightscout, "Carb equivalents deleted from NS")
-                case let .failure(error):
-                    info(
-                        .nightscout,
-                        "Deletion of carb equivalents in NightScout not done \n \(error.localizedDescription)",
                         type: MessageType.warning
                     )
                 }
@@ -519,7 +532,13 @@ final class BaseNightscoutManager: NightscoutManager, Injectable {
     }
 
     private func uploadPumpSettingsToDatabase(_ settings: PumpSettings, token: String, name: String?) {
-        let upload = DatabasePumpSettings(settings: settings, enteredBy: token, profile: name)
+        let concentration = CoreDataStorage().insulinConcentration().concentration
+        let upload = DatabasePumpSettings(
+            settings: settings,
+            enteredBy: token,
+            profile: name,
+            insulinConcentration: concentration
+        )
         processQueue.async {
             Database(token: token).uploadPumpSettings(upload)
                 .sink { completion in
@@ -603,11 +622,12 @@ final class BaseNightscoutManager: NightscoutManager, Injectable {
 
         var openapsStatus: OpenAPSStatus
 
-        // Only upload suggested in Open Loop Mode. Only upload enacted in Closed Loop Mode.
+        // Nightscout requires both enacted and suggested fields to show popup on graph
+        // When we have enacted, also send suggested with same content
         if loopIsClosed {
             openapsStatus = OpenAPSStatus(
                 iob: iob?.first,
-                suggested: nil,
+                suggested: enacted,
                 enacted: enacted,
                 version: "0.7.1"
             )
@@ -634,13 +654,17 @@ final class BaseNightscoutManager: NightscoutManager, Injectable {
 
         let uploader = Uploader(batteryVoltage: nil, battery: Int(device.batteryLevel * 100))
 
+        // Use latest SGV timestamp to match devicestatus with SGV entries
+        let latestGlucoseDate = glucoseStorage.latestDate() ?? Date()
+
         var status: NightscoutStatus
 
         status = NightscoutStatus(
             device: NigtscoutTreatment.local,
             openaps: openapsStatus,
             pump: pump,
-            uploader: uploader
+            uploader: uploader,
+            createdAt: latestGlucoseDate
         )
 
         storage.save(status, as: OpenAPS.Upload.nsStatus)
@@ -990,20 +1014,91 @@ final class BaseNightscoutManager: NightscoutManager, Injectable {
         }
     }
 
-    func uploadGlucose() {
-        uploadGlucose(glucoseStorage.nightscoutGlucoseNotUploaded(), fileToSave: OpenAPS.Nightscout.uploadedGlucose)
-        uploadTreatments(glucoseStorage.nightscoutCGMStateNotUploaded(), fileToSave: OpenAPS.Nightscout.uploadedCGMState)
-    }
-
     private func getIdentifier() -> String {
         keychain.getIdentifier()
     }
 
-    func uploadManualGlucose() {
-        uploadTreatments(
-            glucoseStorage.nightscoutManualGlucoseNotUploaded(),
-            fileToSave: OpenAPS.Nightscout.uploadedManualGlucose
-        )
+    private var glucoseFormatter: NumberFormatter {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = 0
+        if settingsManager.settings.units == .mmolL {
+            formatter.maximumFractionDigits = 1
+        }
+        formatter.decimalSeparator = "."
+        return formatter
+    }
+
+    private func nightscoutGlucoseNotUploaded(bloodGlucose: [BloodGlucose]) -> [BloodGlucose] {
+        let uploaded = storage.retrieve(OpenAPS.Nightscout.uploadedGlucose, as: [BloodGlucose].self) ?? []
+        let recentGlucose = bloodGlucose.filter({ $0.type != GlucoseType.manual.rawValue })
+
+        let glucoseToUpload = Array(Set(recentGlucose).subtracting(Set(uploaded)))
+
+        return glucoseToUpload
+    }
+
+    private func nightscoutCGMStateNotUploaded() -> [NigtscoutTreatment] {
+        let uploaded = storage.retrieve(OpenAPS.Nightscout.uploadedCGMState, as: [NigtscoutTreatment].self) ?? []
+        let recent = storage.retrieve(OpenAPS.Monitor.cgmState, as: [NigtscoutTreatment].self) ?? []
+        return Array(Set(recent).subtracting(Set(uploaded)))
+    }
+
+    private func nightscoutManualGlucoseNotUploaded(bloodGlucose: [BloodGlucose]) -> [NigtscoutTreatment] {
+        let uploaded = (storage.retrieve(OpenAPS.Nightscout.uploadedGlucose, as: [BloodGlucose].self) ?? [])
+            .filter({ $0.type == GlucoseType.manual.rawValue })
+        let recent = bloodGlucose.filter({ $0.type == GlucoseType.manual.rawValue })
+        let filtered = Array(Set(recent).subtracting(Set(uploaded)))
+        let manualReadings = filtered.map { item -> NigtscoutTreatment in
+            NigtscoutTreatment(
+                duration: nil, rawDuration: nil, rawRate: nil, absolute: nil, rate: nil, eventType: .capillaryGlucose,
+                createdAt: item.dateString, enteredBy: "iAPS", bolus: nil, insulin: nil, notes: "iAPS User", carbs: nil,
+                fat: nil,
+                protein: nil, foodType: nil, targetTop: nil, targetBottom: nil, glucoseType: "Manual",
+                glucose: settingsManager.settings
+                    .units == .mgdL ? (glucoseFormatter.string(from: Int(item.glucose ?? 100) as NSNumber) ?? "")
+                    : (glucoseFormatter.string(from: Decimal(item.glucose ?? 100).asMmolL as NSNumber) ?? ""),
+                units: settingsManager.settings.units == .mmolL ? "mmol" : "mg/dl"
+            )
+        }
+        return manualReadings
+    }
+
+    func uploadOldGlucose(bloodGlucose: [BloodGlucose], completion: @escaping () -> Void, progress: @escaping (Double) -> Void) {
+        guard !bloodGlucose.isEmpty, nightscoutAPI != nil, isUploadEnabled else {
+            completion()
+            return
+        }
+        processQueue.async {
+            self.uploadGlucose(
+                upload: bloodGlucose,
+                allGlucose: nil, // do not update the "already uploaded glucose" file
+                fileToSave: OpenAPS.Nightscout.uploadedGlucose,
+                completionCB: completion,
+                progress: progress
+            )
+        }
+    }
+
+    private func uploadGlucose(bloodGlucose: [BloodGlucose]) {
+        guard !bloodGlucose.isEmpty, nightscoutAPI != nil, isUploadEnabled else {
+            return
+        }
+
+        processQueue.async {
+            let glucoseNotYetUploaded = self.nightscoutGlucoseNotUploaded(bloodGlucose: bloodGlucose)
+            self.uploadGlucose(
+                upload: glucoseNotYetUploaded,
+                allGlucose: bloodGlucose,
+                fileToSave: OpenAPS.Nightscout.uploadedGlucose
+            )
+
+            let cgmStateNotUploaded = self.nightscoutCGMStateNotUploaded()
+            self.uploadTreatments(cgmStateNotUploaded, fileToSave: OpenAPS.Nightscout.uploadedCGMState)
+
+            let manualGlucoseNotYetUploaded = self.nightscoutManualGlucoseNotUploaded(bloodGlucose: bloodGlucose)
+            self.uploadTreatments(manualGlucoseNotYetUploaded, fileToSave: OpenAPS.Nightscout.uploadedManualGlucose)
+        }
     }
 
     func editOverride(_ profile: String, _ duration_: Double, _ date: Date) {
@@ -1150,8 +1245,16 @@ final class BaseNightscoutManager: NightscoutManager, Injectable {
         uploadTreatments(tempTargetsStorage.nightscoutTretmentsNotUploaded(), fileToSave: OpenAPS.Nightscout.uploadedTempTargets)
     }
 
-    private func uploadGlucose(_ glucose: [BloodGlucose], fileToSave: String) {
+    /// upload `glucose` to nightscout, upon success - if provided, save `allGlucose` to storage so we don't upload any of it next time
+    private func uploadGlucose(
+        upload glucose: [BloodGlucose],
+        allGlucose: [BloodGlucose]?,
+        fileToSave: String,
+        completionCB: (() -> Void)? = nil,
+        progress: ((Double) -> Void)? = nil
+    ) {
         guard !glucose.isEmpty, let nightscout = nightscoutAPI, isUploadEnabled, isUploadGlucoseEnabled else {
+            completionCB?()
             return
         }
         // check if unique code
@@ -1159,29 +1262,42 @@ final class BaseNightscoutManager: NightscoutManager, Injectable {
         let glucoseWithoutCorrectID = glucose.filter { UUID(uuidString: $0._id) != nil }
 
         processQueue.async {
-            glucoseWithoutCorrectID.chunks(ofCount: 100)
-                .map { chunk -> AnyPublisher<Void, Error> in
-                    nightscout.uploadGlucose(Array(chunk))
+            let total = glucose.count
+            var uploaded = 0
+            progress?(0.0)
+
+            let chunks = glucoseWithoutCorrectID.chunks(ofCount: 100)
+
+            chunks.publisher
+                .flatMap(maxPublishers: .max(1)) { chunk -> AnyPublisher<Void, Error> in
+                    Deferred {
+                        nightscout.uploadGlucose(Array(chunk))
+                    }
+                    .handleEvents(receiveCompletion: { completion in
+                        if case .finished = completion {
+                            uploaded += chunk.count
+                            if total != 0 {
+                                progress?(Double(uploaded) / Double(total))
+                            } else {
+                                progress?(1.0)
+                            }
+                        }
+                    })
+                    .eraseToAnyPublisher()
                 }
-                .reduce(
-                    Just(()).setFailureType(to: Error.self)
-                        .eraseToAnyPublisher()
-                ) { (result, next) -> AnyPublisher<Void, Error> in
-                    Publishers.Concatenate(prefix: result, suffix: next).eraseToAnyPublisher()
-                }
-                .dropFirst()
+                .collect()
                 .sink { completion in
                     switch completion {
                     case .finished:
-                        self.storage.save(glucose, as: fileToSave)
+                        if let allGlucose {
+                            self.storage.save(allGlucose, as: fileToSave)
+                        }
                         debug(.nightscout, "Glucose uploaded")
-
-                        // self.checkForNoneUploadedOverides() // To do : Move somewhere else
-
                     case let .failure(error):
                         debug(.nightscout, "Upload of glucose failed: " + error.localizedDescription)
                     }
-                } receiveValue: {}
+                    completionCB?()
+                } receiveValue: { _ in }
                 .store(in: &self.lifetime)
         }
     }
@@ -1224,7 +1340,7 @@ final class BaseNightscoutManager: NightscoutManager, Injectable {
     private func uploadTreatments(_ treatments: [NigtscoutTreatment], fileToSave: String) {
         guard let nightscout = nightscoutAPI, isUploadEnabled else { return }
 
-        checkForNoneUploadedOverides() // To do : Move somewhere else
+        checkForNoneUploadedOverides()
 
         guard !treatments.isEmpty else { return }
 
@@ -1243,7 +1359,13 @@ final class BaseNightscoutManager: NightscoutManager, Injectable {
                 .sink { completion in
                     switch completion {
                     case .finished:
-                        self.storage.save(treatments, as: fileToSave)
+                        let oldUploaded = self.storage.retrieve(fileToSave, as: [NigtscoutTreatment].self) ?? []
+                        let cutoff = Date().addingTimeInterval(-TimeInterval(hours: 30))
+                        let oldAndNewUploaded = (oldUploaded + treatments).filter { treatment in
+                            guard let createdAt = treatment.createdAt else { return false }
+                            return createdAt >= cutoff
+                        }
+                        self.storage.save(oldAndNewUploaded, as: fileToSave)
                         debug(.nightscout, "Treatments uploaded")
                     case let .failure(error):
                         debug(.nightscout, error.localizedDescription)
@@ -1273,7 +1395,7 @@ extension BaseNightscoutManager: TempTargetsObserver {
 }
 
 extension BaseNightscoutManager: GlucoseObserver {
-    func glucoseDidUpdate(_: [BloodGlucose]) {
-        uploadManualGlucose()
+    func glucoseDidUpdate(_ bloodGlucose: [BloodGlucose]) {
+        uploadGlucose(bloodGlucose: bloodGlucose)
     }
 }

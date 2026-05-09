@@ -99,9 +99,46 @@ enum CGMType: String, JSON, CaseIterable, Identifiable {
             return NSLocalizedString("Minilink transmitter", comment: "Minilink transmitter")
         }
     }
+
+    var expiration: TimeInterval {
+        let secondsOfDay = 8.64E4
+        switch self {
+        case .dexcomG6:
+            return 10 * secondsOfDay
+        case .dexcomG7:
+            return 10.5 * secondsOfDay
+        case .libreTransmitter:
+            return 14.5 * secondsOfDay
+        case .enlite:
+            return 6 * secondsOfDay
+        default:
+            return 10 * secondsOfDay
+        }
+    }
 }
 
 enum GlucoseDataError: Error {
     case noData
     case unreliableData
+}
+
+// temporary - convert from CGMType to pluginIdentifier
+extension CGMType {
+    var pluginIdentifier: String? {
+        switch self {
+        case .nightscout: return "NightscoutRemoteCGM"
+        case .dexcomG5: return "DexcomG5CGMManager" // or whatever the actual identifier is
+        case .dexcomG6: return "DexcomG6CGMManager"
+        case .dexcomG7: return "G7CGMManager"
+        case .simulator: return "MockCGMManager"
+        case .libreTransmitter: return "LibreTransmitterManager"
+        case .glucoseDirect: return "GlucoseDirectCGM" // if available
+        case .xdrip: return "xDripCGM" // if available
+        case .enlite: return "EnliteCGM" // if available
+        }
+    }
+
+    static func from(pluginIdentifier: String) -> CGMType? {
+        CGMType.allCases.first { $0.pluginIdentifier == pluginIdentifier }
+    }
 }

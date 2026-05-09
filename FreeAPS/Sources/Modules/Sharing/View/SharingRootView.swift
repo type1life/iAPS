@@ -12,7 +12,7 @@ public enum Sex: String, CaseIterable, Identifiable {
 extension Sharing {
     struct RootView: BaseView {
         let resolver: Resolver
-        @StateObject var state = StateModel()
+        @StateObject var state: StateModel
 
         @State private var display: Bool = false
         @State private var copied: Bool = false
@@ -28,6 +28,11 @@ extension Sharing {
                 ...
                 calendar.date(from: endComponents)!
         }()
+
+        init(resolver: Resolver) {
+            self.resolver = resolver
+            _state = StateObject(wrappedValue: StateModel(resolver: resolver))
+        }
 
         var body: some View {
             Form {
@@ -49,14 +54,23 @@ extension Sharing {
                 } header: { Text("Upload Settings and Statistics") }
                 footer: {
                     Text(
-                        "\nIf you enable \"Share and Backup\" daily backups of your settings and statistics will be made to online database.\n\nMake sure to copy and save your recovery token below. The recovery token is required to import your settings to another phone when using the onboarding view."
+                        "\nIf you enable \"Share and Backup\" daily backups of your settings and statistics will be made to online database."
                     )
                 }
 
                 Section {}
                 footer: {
                     Text(
-                        "Every bit of information you choose to share is uploaded anonymously. To prevent duplicate uploads, the data is identified with a unique random string saved on your phone, the recovery token."
+                        "Every bit of information you choose to share is uploaded anonymously. To prevent duplicate uploads, the data is identified with a unique random string saved on your phone - the recovery token."
+                    )
+                }
+
+                Section {
+                    Toggle("Upload Daily Log", isOn: $state.uploadLogs)
+                } header: { Text("Upload Daily Log") }
+                footer: {
+                    Text(
+                        "When enabled, the previous day's log file is automatically uploaded after midnight. Logs are used only to provide the multi-day analysis feature on open-iaps.app. Off by default."
                     )
                 }
 
@@ -96,7 +110,6 @@ extension Sharing {
             }
             .dynamicTypeSize(...DynamicTypeSize.xxLarge)
             .onAppear {
-                configureView()
                 state.savedSettings()
             }
             .navigationBarTitle("Share and Backup")

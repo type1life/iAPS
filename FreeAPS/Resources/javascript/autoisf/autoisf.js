@@ -14,15 +14,15 @@ function generate(iob, profile, autosens, glucose, clock, pumpHistory) {
           }
         }
         profile.iaps = overrides;
-
-        if (!profile.iaps.autoisf) {
-            console.log("Auto ISF Disabled by Override");
-            profile.autoISFreasons = "Auto ISF Disabled by Override"
-            profile.iaps.autoisf = false;
-            return profile
-        }
     }
-    
+
+    if (!profile.iaps.autoisf) {
+        console.log("Auto ISF Disabled (by override or middleware)");
+        profile.autoISFreasons = "Auto ISF Disabled"
+        profile.iaps.autoisf = false;
+        return profile
+    }
+
     // Auto ISF
     const glucose_status = getLastGlucose(glucose);
     aisf(iob, profile, autosens_data, dynamicVariables, glucose_status, clock, pumpHistory);
@@ -57,7 +57,7 @@ function aisf(iob, profile, autosens_data, dynamicVariables, glucose_status, cur
 
     // B30
     if (profile.iaps.use_B30) {
-        aimi(profile, pumpHistory, dynamicVariables, glucose_status);
+        b30(profile, pumpHistory, dynamicVariables, glucose_status);
     }
     
     // Auto ISF ratio
@@ -169,7 +169,6 @@ function aisf_ratio(profile, glucose_status, currentTime, autosens_data, normalT
     const parabola_fit_a2 = glucose_status.a_2;
     const dura05 = glucose_status.dura_ISF_minutes;
     const avg05  = glucose_status.dura_ISF_average;
-    const bg_off = profile.min_bg + 10 - glucose_status.glucose;
 
     let sens_modified = false;
     let autoISFsens = profile.sens;
@@ -179,7 +178,8 @@ function aisf_ratio(profile, glucose_status, currentTime, autosens_data, normalT
     if (dynamicVariables.useOverride && dynamicVariables.overrideTarget > 6) {
         target_bg = dynamicVariables.overrideTarget;
     }
-    
+    const bg_off = target_bg + 10 - glucose_status.glucose;
+
     // The Auto ISF ratios
     let acce_ISF = 1;
     let acce_weight = 1;
@@ -225,7 +225,7 @@ function aisf_ratio(profile, glucose_status, currentTime, autosens_data, normalT
         } else {
             const fit_share = 10 * (parabola_fit_correlation - 0.9);  // 0 at correlation 0.9, 1 at 1.00
             let cap_weight = 1;  // full contribution above target
-            if (acce_weight === 1 && glucose_status.glucose < profile.target_bg) {  // below target acce goes towards target
+            if (acce_weight === 1 && glucose_status.glucose < target_bg) {  // below target acce goes towards target
                 if (bg_acce > 0) {
                     if (bg_acce>1) {
                         cap_weight = 0.5;  // halve the effect below target
@@ -256,20 +256,21 @@ function aisf_ratio(profile, glucose_status, currentTime, autosens_data, normalT
     }
 
     bg_ISF = 1 + interpolate(100 - bg_off, profile, "bg");
-    console.log("BG_ISF adaptation: " + round(bg_ISF, 2));
+    console.log("BG_ISF adaptation: " + bg_ISF);
     let liftISF = 1;
 
     if (bg_ISF < 1) {
-        liftISF = Math.min(bg_ISF, acce_ISF);
+        addMessage("BG-ISF < 1");
         if (acce_ISF > 1) {
             liftISF = bg_ISF * acce_ISF;
             console.log("BG-ISF adaptation lifted to " + round(liftISF, 2) + ", as BG accelerates already");
             addMessage("BG-ISF adaptation lifted to " + round(liftISF, 2) + " as BG accelerates already");
         } else {
+            liftISF = Math.min(bg_ISF, acce_ISF);
             console.log("liftISF: " + round(liftISF, 2) + "(minimal)");
             addMessage("liftISF: " + round(liftISF, 2) + "(minimal)");
         }
-        final_ISF = withinISFlimits(liftISF, sensitivityRatio, profile, normalTarget);
+        final_ISF = withinISFlimits(liftISF, profile, normalTarget);
         autoISFsens = Math.min(720, round(profile.sens / final_ISF, 1));
         console.log("Final ratio: " + round(final_ISF,2)  + ", final ISF: " + convert_bg(profile.sens, profile) + "\u2192" + convert_bg(autoISFsens, profile));
         
@@ -333,7 +334,7 @@ function aisf_ratio(profile, glucose_status, currentTime, autosens_data, normalT
             addMessage("Strongest autoISF factor " + round(liftISF, 2) + " weakened to " + round(liftISF * acce_ISF, 2) + " as bg decelerates already");
             liftISF *= acce_ISF; // brakes on for otherwise stronger or stable ISF
         }
-        final_ISF = withinISFlimits(liftISF, sensitivityRatio, profile, 100);
+        final_ISF = withinISFlimits(liftISF, profile, 100);
         autoISFsens = round(final_ISF, 2);
         console.log("Auto ISF: new Ratio: " + round(final_ISF, 2) + ", final ISF: " + convert_bg(profile.sens, profile) + "\u2192" + convert_bg(profile.sens / autoISFsens, profile));
         
@@ -386,7 +387,7 @@ function determine_varSMBratio(profile, bg, dynamicVariables) {
     return new_SMB
 }
 
-function withinISFlimits(liftISF, sensitivityRatio, profile, normalTarget) {
+function withinISFlimits(liftISF, profile, normalTarget) {
     let origin_sens = " " + profile.sens;
     console.log("check ratio " + round(liftISF, 2) + " against autoISF min: " + profile.iaps.autoisf_min + " and autoISF max: " + profile.iaps.autoisf_max);
     
@@ -399,21 +400,8 @@ function withinISFlimits(liftISF, sensitivityRatio, profile, normalTarget) {
         addMessage("Strongest autoISF factor " + round(liftISF, 2) + " limited by autoISF_max " + profile.iaps.autoisf_max);
         liftISF = profile.iaps.autoisf_max;
     }
-    let final_ISF = 1;
-    // SensitivityRatio = Autosens ratio
-    if (liftISF >= 1) {
-        final_ISF = Math.max(liftISF, sensitivityRatio);
-        if (liftISF >= sensitivityRatio) {
-            origin_sens = ""; // autoISF dominates
-        }
-    } else {
-        final_ISF = Math.min(liftISF, sensitivityRatio);
-        if (liftISF <= sensitivityRatio) {
-            origin_sens = "";  // autoISF dominates
-        }
-    }
-    console.log("final ISF factor " + round(final_ISF,2) + origin_sens);
-    return final_ISF
+    console.log("final ISF factor " + liftISF);
+    return liftISF
 }
 
 function convert_bg(value, profile) {
@@ -431,10 +419,16 @@ function round(value, digits) {
     return Math.round(value * scale) / scale;
 }
 
+function floor(value, digits) {
+    if (! digits) { digits = 0; }
+    const scale = Math.pow(10, digits);
+    return Math.floor(value * scale) / scale;
+}
+
 function exercising(profile, dynamicVariables) {
     // One of two exercise settings (they share the same purpose).
     if (profile.high_temptarget_raises_sensitivity || profile.exercise_mode || dynamicVariables.isEnabled) {
-        // Turn dynISF off when using a temp target >= 118 (6.5 mol/l) and if an exercise setting is enabled.
+        // Turn auto ISF off when using a temp target >= 118 (6.5 mol/l) and if an exercise setting is enabled.
         if (profile.temptargetSet && profile.min_bg >= 118 || (dynamicVariables.useOverride && dynamicVariables.overrideTarget >= 118)) {
             return true;
         }
@@ -445,13 +439,17 @@ function exercising(profile, dynamicVariables) {
 const MillisecondsPerMinute = 60 * 1000
 
 // B30
-function aimi(profile, pumpHistory, dynamicVariables, glucose_status) {
+function b30(profile, pumpHistory, dynamicVariables, glucose_status) {
     // Guards
     if (!profile.iaps.closedLoop) {
         return
     }
     // Needs either a TT or a profile override < the set B30 target level
     if (!(profile.temptargetSet && profile.min_bg < profile.iaps.b30targetLevel || dynamicVariables.useOverride && dynamicVariables.overrideTarget > 6 && dynamicVariables.overrideTarget < profile.iaps.b30targetLevel)) {
+        return
+    }
+    // In case override and temp target are used simultaneously - use temp target.
+    if (profile.temptargetSet && profile.min_bg >= profile.iaps.b30targetLevel) {
         return
     }
     
@@ -571,7 +569,11 @@ function iob_max(iob, dynamicVariables, profile) {
 // Reasons for iAPS pop-up
 function reasons(profile, acce_ISF, bg_ISF, dura_ISF, pp_ISF) {
     addReason("acce: " + round(acce_ISF, 2));
-    addReason("bg: " + round(bg_ISF, 2));
+    let roundedBg = round(bg_ISF, 2);
+    if (roundedBg === 1 && bg_ISF < 1) {
+        roundedBg = floor(bg_ISF, 3);
+    }
+    addReason("bg: " + roundedBg);
     addReason("dura: " + round(dura_ISF, 2));
-    addReason("pp: " + round(pp_ISF, 2));
+    addReason("pp: " + round(pp_ISF, 3));
 }

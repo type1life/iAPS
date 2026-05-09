@@ -40,6 +40,7 @@ extension LiveActivityAttributes.ContentState {
         prev: Readings?,
         mmol: Bool,
         suggestion: Suggestion,
+        iob: Decimal?,
         loopDate: Date,
         readings: [Readings]?,
         predictions: Predictions?,
@@ -55,7 +56,7 @@ extension LiveActivityAttributes.ContentState {
         let trendString = bg?.direction
         let change = Self.formatGlucose(Int((bg?.glucose ?? 0) - (prev?.glucose ?? 0)), mmol: mmol, forceSign: true)
         let cobString = Self.carbFormatter((suggestion.cob ?? 0) as NSNumber)
-        let iobString = Self.formatter((suggestion.iob ?? 0) as NSNumber)
+        let iobString = Self.formatter((iob ?? 0) as NSNumber)
         let eventual = Self.formatGlucose(suggestion.eventualBG ?? 100, mmol: mmol, forceSign: false)
         let mmol = mmol
 
@@ -157,6 +158,7 @@ final class LiveActivityBridge: Injectable, ObservableObject, SettingsObserver {
     private var latestGlucose: Readings?
     private var loopDate: Date?
     private var suggestion: Suggestion?
+    private var iob: Decimal?
 
     init(resolver: Resolver) {
         systemEnabled = activityAuthorizationInfo.areActivitiesEnabled
@@ -164,6 +166,7 @@ final class LiveActivityBridge: Injectable, ObservableObject, SettingsObserver {
         injectServices(resolver)
         broadcaster.register(SuggestionObserver.self, observer: self)
         broadcaster.register(EnactedSuggestionObserver.self, observer: self)
+        broadcaster.register(PumpHistoryObserver.self, observer: self)
 
         Foundation.NotificationCenter.default.addObserver(
             forName: UIApplication.didEnterBackgroundNotification,
@@ -195,8 +198,6 @@ final class LiveActivityBridge: Injectable, ObservableObject, SettingsObserver {
             {
                 print("live activity settings changed")
                 forceActivityUpdate(force: true)
-            } else {
-                print("live activity settings unchanged")
             }
         }
         knownSettings = newSettings
@@ -263,12 +264,12 @@ final class LiveActivityBridge: Injectable, ObservableObject, SettingsObserver {
                         )
                         return ActivityContent(
                             state: state.withoutPredictions(),
-                            staleDate: min(state.date, Date.now).addingTimeInterval(TimeInterval(12 * 60))
+                            staleDate: Date.now.addingTimeInterval(TimeInterval(12 * 60))
                         )
                     } else {
                         return ActivityContent(
                             state: state,
-                            staleDate: min(state.date, Date.now).addingTimeInterval(TimeInterval(12 * 60))
+                            staleDate: Date.now.addingTimeInterval(TimeInterval(12 * 60))
                         )
                     }
                 }()
@@ -329,7 +330,11 @@ final class LiveActivityBridge: Injectable, ObservableObject, SettingsObserver {
     }
 }
 
-extension LiveActivityBridge: SuggestionObserver, EnactedSuggestionObserver {
+extension LiveActivityBridge: SuggestionObserver, EnactedSuggestionObserver, PumpHistoryObserver {
+    func pumpHistoryDidUpdate(_: [PumpHistoryEvent]) {
+        iob = coreDataStorage.fetchInsulinData(interval: DateFilter().oneHour).first?.iob
+    }
+
     func enactedSuggestionDidUpdate(_ suggestion: Suggestion) {
         let settings = self.settings
 
@@ -343,8 +348,7 @@ extension LiveActivityBridge: SuggestionObserver, EnactedSuggestionObserver {
         }
         defer { self.suggestion = suggestion }
 
-        let cd = CoreDataStorage()
-        let glucose = cd.fetchGlucose(interval: DateFilter().threeHours)
+        let glucose = coreDataStorage.fetchGlucose(interval: DateFilter().threeHours)
         let prev = glucose.count > 1 ? glucose[1] : glucose.first
 
         guard let content = LiveActivityAttributes.ContentState(
@@ -352,8 +356,9 @@ extension LiveActivityBridge: SuggestionObserver, EnactedSuggestionObserver {
             prev: prev,
             mmol: settings.units == .mmolL,
             suggestion: suggestion,
+            iob: suggestion.iob,
             loopDate: (suggestion.recieved ?? false) ? (suggestion.timestamp ?? .distantPast) :
-                (cd.fetchLastLoop()?.timestamp ?? .distantPast),
+                (coreDataStorage.fetchLastLoop()?.timestamp ?? .distantPast),
             readings: settings.liveActivityChart ? glucose : nil,
             predictions: settings.liveActivityChart && settings.liveActivityChartShowPredictions ? suggestion.predictions : nil,
             showChart: settings.liveActivityChart,
@@ -381,8 +386,7 @@ extension LiveActivityBridge: SuggestionObserver, EnactedSuggestionObserver {
         }
         defer { self.suggestion = suggestion }
 
-        let cd = CoreDataStorage()
-        let glucose = cd.fetchGlucose(interval: DateFilter().threeHours)
+        let glucose = coreDataStorage.fetchGlucose(interval: DateFilter().threeHours)
         let prev = glucose.count > 1 ? glucose[1] : glucose.first
 
         guard let content = LiveActivityAttributes.ContentState(
@@ -390,7 +394,8 @@ extension LiveActivityBridge: SuggestionObserver, EnactedSuggestionObserver {
             prev: prev,
             mmol: settings.units == .mmolL,
             suggestion: suggestion,
-            loopDate: settings.closedLoop ? (cd.fetchLastLoop()?.timestamp ?? .distantPast) : suggestion
+            iob: suggestion.iob,
+            loopDate: settings.closedLoop ? (coreDataStorage.fetchLastLoop()?.timestamp ?? .distantPast) : suggestion
                 .timestamp ?? .distantPast,
             readings: settings.liveActivityChart ? glucose : nil,
             predictions: settings.liveActivityChart && settings.liveActivityChartShowPredictions ? suggestion.predictions : nil,

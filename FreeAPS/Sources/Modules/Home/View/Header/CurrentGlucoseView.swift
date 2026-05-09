@@ -10,6 +10,10 @@ struct CurrentGlucoseView: View {
     @Binding var alwaysUseColors: Bool
     @Binding var displayDelta: Bool
     @Binding var scrolling: Bool
+    @Binding var displaySAGE: Bool
+    @Binding var displayExpiration: Bool
+    @Binding var sensordays: Double
+    @Binding var timerDate: Date
 
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.sizeCategory) private var fontSize
@@ -69,6 +73,20 @@ struct CurrentGlucoseView: View {
         return formatter
     }
 
+    private var remainingTimeFormatter: DateComponentsFormatter {
+        let formatter = DateComponentsFormatter()
+        formatter.allowedUnits = [.day, .hour]
+        formatter.unitsStyle = .abbreviated
+        return formatter
+    }
+
+    private var remainingTimeFormatterDays: DateComponentsFormatter {
+        let formatter = DateComponentsFormatter()
+        formatter.allowedUnits = [.day]
+        formatter.unitsStyle = .abbreviated
+        return formatter
+    }
+
     var body: some View {
         glucoseView
             .dynamicTypeSize(DynamicTypeSize.medium ... DynamicTypeSize.xLarge)
@@ -79,21 +97,27 @@ struct CurrentGlucoseView: View {
             if let recent = recentGlucose {
                 if displayDelta, !scrolling, let deltaInt = delta,
                    !(units == .mmolL && abs(deltaInt) <= 1) { deltaView(deltaInt) }
+                if displayExpiration || displaySAGE {
+                    sageView
+                }
                 VStack(spacing: 15) {
                     let formatter = recent.type == GlucoseType.manual.rawValue ? manualGlucoseFormatter : glucoseFormatter
-                    if let string = recent.glucose.map({
+                    if let string = recent.unfiltered.map({
                         formatter
-                            .string(from: Double(units == .mmolL ? $0.asMmolL : Decimal($0)) as NSNumber) ?? "" })
+                            .string(from: Double(units == .mmolL ? $0.asMmolL : $0) as NSNumber) ?? "" })
                     {
                         glucoseText(string).asAny()
                             .background { glucoseDrop }
+                            .contentTransition(.numericText())
+                            .animation(.spring(response: 0.4, dampingFraction: 0.7), value: recent.glucose)
                         if !scrolling {
-                            let minutesAgo = -1 * recent.dateString.timeIntervalSinceNow / 60
+                            let minutesAgo = timerDate.timeIntervalSince(recent.dateString) / 60
                             let text = timaAgoFormatter.string(for: Double(minutesAgo)) ?? ""
                             Text(
                                 minutesAgo <= 1 ? NSLocalizedString("Now", comment: "") :
                                     (text + " " + NSLocalizedString("min", comment: "Short form for minutes") + " ")
                             )
+                            .animation(.spring(response: 0.4, dampingFraction: 0.7), value: minutesAgo)
                             .font(.caption)
                             .foregroundStyle(.secondary)
                             .offset(x: 1, y: fontSize >= .extraLarge ? -3 : 0)
@@ -115,7 +139,40 @@ struct CurrentGlucoseView: View {
                 .offset(x: offset, y: 10)
         }
         .dynamicTypeSize(DynamicTypeSize.medium ... DynamicTypeSize.large)
-        .frame(maxHeight: .infinity, alignment: .center).offset(x: 120, y: -7)
+        .frame(maxHeight: .infinity, alignment: .center).offset(x: 110.5, y: -9)
+    }
+
+    private var sageView: some View {
+        ZStack {
+            if let date = recentGlucose?.sessionStartDate {
+                let sensorAge: TimeInterval = (-1 * date.timeIntervalSinceNow)
+                let expiration = sensordays - sensorAge
+                let secondsOfDay = 8.64E4
+                let colour = colorScheme == .light ? Color.black : Color.white
+                let lineColour: Color = sensorAge >= sensordays - secondsOfDay * 1 ? Color.red
+                    .opacity(0.9) : sensorAge >= sensordays - secondsOfDay * 2 ? Color
+                    .orange : Color.white
+                let minutesAndHours = (displayExpiration && expiration < 1 * 8.64E4) || (displaySAGE && sensorAge < 1 * 8.64E4)
+
+                Sage(amount: sensorAge, expiration: expiration, lineColour: lineColour, sensordays: sensordays)
+                    .frame(width: 36, height: 36)
+                    .overlay {
+                        HStack {
+                            Text(
+                                !minutesAndHours ?
+                                    (remainingTimeFormatterDays.string(from: displayExpiration ? expiration : sensorAge) ?? "")
+                                    .replacingOccurrences(of: ",", with: " ") :
+                                    (remainingTimeFormatter.string(from: displayExpiration ? expiration : sensorAge) ?? "")
+                                    .replacingOccurrences(of: ",", with: " ")
+                            ).foregroundStyle(colour).fontWeight(colorScheme == .dark ? .semibold : .regular)
+                        }
+                    }
+            }
+        }
+        .font(.footnote)
+        .dynamicTypeSize(DynamicTypeSize.medium ... DynamicTypeSize.large)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing).padding(20)
+        .offset(x: -5)
     }
 
     private var adjustments: (degree: Double, x: CGFloat, y: CGFloat) {

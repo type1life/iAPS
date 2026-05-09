@@ -16,8 +16,11 @@ class NightscoutAPI {
         static let treatmentsPath = "/api/v1/treatments.json"
         static let statusPath = "/api/v1/devicestatus.json"
         static let profilePath = "/api/v1/profile.json"
-        static let sharePath = "/upload.php"
-        static let versionPath = "/vcheck.php"
+        static let uploadStatisticsPath = "/api/v1/upload/statistics"
+        static let uploadPreferencesPath = "/api/v1/upload/preferences"
+        static let uploadSettingsPath = "/api/v1/upload/settings"
+        static let uploadProfilesPath = "/api/v1/upload/profiles"
+        static let versionPath = "/api/v1/version_check"
         static let retryCount = 2
         static let timeout: TimeInterval = 60
     }
@@ -59,13 +62,20 @@ extension NightscoutAPI {
             .eraseToAnyPublisher()
     }
 
-    func fetchLastGlucose(sinceDate: Date? = nil) -> AnyPublisher<[BloodGlucose], Swift.Error> {
+    /// fetch glucose with [ date >= sinceDate AND date < untilDate ]
+    func fetchLastGlucose(sinceDate: Date? = nil, untilDate: Date? = nil) -> AnyPublisher<[BloodGlucose], Swift.Error> {
         var components = URLComponents()
         components.scheme = url.scheme
         components.host = url.host
         components.port = url.port
         components.path = Config.entriesPath
-        components.queryItems = [URLQueryItem(name: "count", value: "\(1600)")]
+        components.queryItems = [
+            URLQueryItem(name: "count", value: "\(500)"),
+            URLQueryItem(
+                name: "sort$desc",
+                value: "dateString"
+            ) // "date descending" should be the default sorting, but we're specifying it explicitly here, just in case
+        ]
         if let date = sinceDate {
             let dateItem = URLQueryItem(
                 name: "find[dateString][$gte]",
@@ -73,9 +83,16 @@ extension NightscoutAPI {
             )
             components.queryItems?.append(dateItem)
         }
+        if let date = untilDate {
+            let dateItem = URLQueryItem(
+                name: "find[dateString][$lt]",
+                value: Formatter.iso8601withFractionalSeconds.string(from: date)
+            )
+            components.queryItems?.append(dateItem)
+        }
 
         var request = URLRequest(url: components.url!)
-        request.allowsConstrainedNetworkAccess = false
+        request.allowsConstrainedNetworkAccess = true
         request.timeoutInterval = Config.timeout
 
         if let secret = secret {
@@ -89,7 +106,7 @@ extension NightscoutAPI {
                 warning(.nightscout, "Glucose fetching error: \(error.localizedDescription)")
                 return Just([]).setFailureType(to: Swift.Error.self).eraseToAnyPublisher()
             }
-            .map { glucose in
+            .compactMap { glucose in
                 glucose
                     .map {
                         var reading = $0
@@ -114,7 +131,19 @@ extension NightscoutAPI {
             ),
             URLQueryItem(
                 name: "find[enteredBy][$ne]",
+                value: CarbsEntry.watch.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
+            ),
+            URLQueryItem(
+                name: "find[enteredBy][$ne]",
+                value: CarbsEntry.shortcut.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
+            ),
+            URLQueryItem(
+                name: "find[enteredBy][$ne]",
                 value: NigtscoutTreatment.local.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
+            ),
+            URLQueryItem(
+                name: "find[enteredBy][$ne]",
+                value: NigtscoutTreatment.trio.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
             )
         ]
         if let date = sinceDate {
@@ -143,17 +172,15 @@ extension NightscoutAPI {
             .eraseToAnyPublisher()
     }
 
-    func deleteCarbs(_ treatement: DataTable.Treatment, _isFPU: Bool) -> AnyPublisher<Void, Swift.Error> {
+    func deleteCarbs(_ date: Date) -> AnyPublisher<Void, Swift.Error> {
         var components = URLComponents()
         components.scheme = url.scheme
         components.host = url.host
         components.port = url.port
         components.path = Config.treatmentsPath
 
-        let arguments = _isFPU ? "find[fpuID][$eq]" : "find[created_at][$eq]"
-
-        let value = _isFPU ? (treatement.fpuID ?? "") : Formatter.iso8601withFractionalSeconds
-            .string(from: treatement.date)
+        let arguments = "find[creation_date][$eq]"
+        let value = Formatter.iso8601withFractionalSeconds.string(from: date)
 
         components.queryItems = [
             URLQueryItem(name: "find[carbs][$exists]", value: "true"),
@@ -482,6 +509,7 @@ extension NightscoutAPI {
         if let secret = secret {
             request.addValue(secret.sha1(), forHTTPHeaderField: "api-secret")
         }
+        debug(.nightscout, "NS Client: uploading \(glucose.count) glucose entries")
         request.httpBody = try! JSONCoding.encoder.encode(glucose)
         request.httpMethod = "POST"
 
@@ -497,7 +525,7 @@ extension NightscoutAPI {
         components.scheme = statURL.scheme
         components.host = statURL.host
         components.port = statURL.port
-        components.path = Config.sharePath
+        components.path = Config.uploadStatisticsPath
 
         var request = URLRequest(url: components.url!)
         request.allowsConstrainedNetworkAccess = false
@@ -564,7 +592,7 @@ extension NightscoutAPI {
         components.scheme = statURL.scheme
         components.host = statURL.host
         components.port = statURL.port
-        components.path = Config.sharePath
+        components.path = Config.uploadPreferencesPath
 
         var request = URLRequest(url: components.url!)
         request.allowsConstrainedNetworkAccess = false
@@ -586,7 +614,7 @@ extension NightscoutAPI {
         components.scheme = statURL.scheme
         components.host = statURL.host
         components.port = statURL.port
-        components.path = Config.sharePath
+        components.path = Config.uploadSettingsPath
 
         var request = URLRequest(url: components.url!)
         request.allowsConstrainedNetworkAccess = false
@@ -632,7 +660,7 @@ extension NightscoutAPI {
         components.scheme = statURL.scheme
         components.host = statURL.host
         components.port = statURL.port
-        components.path = Config.sharePath
+        components.path = Config.uploadProfilesPath
 
         var request = URLRequest(url: components.url!)
         request.allowsConstrainedNetworkAccess = false
@@ -668,6 +696,36 @@ extension NightscoutAPI {
 
         return service.run(request)
             .retry(Config.retryCount)
+            .map { _ in () }
+            .eraseToAnyPublisher()
+    }
+
+    /// Upload the previous day's log file (zlib-compressed) to open-iaps.app.
+    func uploadLog(_ logData: Data, logDate: String, appId: String) -> AnyPublisher<Void, Swift.Error> {
+        let statURL = IAPSconfig.statURL
+        var components = URLComponents()
+        components.scheme = statURL.scheme
+        components.host = statURL.host
+        components.port = statURL.port
+        components.path = "/api/v1/upload/logs"
+
+        guard let url = components.url else {
+            return Fail(error: URLError(.badURL)).eraseToAnyPublisher()
+        }
+        guard let compressed = try? (logData as NSData).compressed(using: .zlib) as Data else {
+            return Fail(error: URLError(.cannotCreateFile)).eraseToAnyPublisher()
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.timeoutInterval = 120
+        request.addValue("application/octet-stream", forHTTPHeaderField: "Content-Type")
+        request.addValue("deflate", forHTTPHeaderField: "Content-Encoding")
+        request.addValue(appId, forHTTPHeaderField: "X-App-Id")
+        request.addValue(logDate, forHTTPHeaderField: "X-Log-Date")
+        request.httpBody = compressed
+
+        return service.run(request)
             .map { _ in () }
             .eraseToAnyPublisher()
     }
